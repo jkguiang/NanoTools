@@ -1,5 +1,12 @@
-
-## This is a WIP of course
+### Keeping up with SnT NanoTools
+First, create a reference to the upstream repository
+```bash
+git remote add upstream https://github.com/cmstas/NanoTools
+```
+Now, you can pull revisions to upstream into this repo
+```bash
+git pull upstream master
+```
 
 ### Environment & setup
 ```bash
