@@ -1,7 +1,8 @@
 #include "Nano.h"
 Nano nt;
 
-void Nano::Init(TTree *tree) {
+void Nano::Init(TTree *tree, int year) {
+    year_ = year;
     b_CaloMET_phi_ = tree->GetBranch("CaloMET_phi");
     if (b_CaloMET_phi_) { b_CaloMET_phi_->SetAddress(&CaloMET_phi_); }
     b_CaloMET_pt_ = tree->GetBranch("CaloMET_pt");
@@ -2971,35 +2972,37 @@ void Nano::Init(TTree *tree) {
 }
 
 void Nano::setYear(TTree* tree) {
-    year_ = -999;
-    TString full_file_path = TString(((TFile*) tree->GetCurrentFile())->GetName());
-    if (full_file_path.Contains("RunIIAutumn18NanoAOD"))
-    {
-        year_ = 2018;
-    }
-    else if (full_file_path.Contains("RunIIFall17NanoAOD"))
-    {
-        year_ = 2017;
-    }
-    else if (full_file_path.Contains("RunIISummer16NanoAOD"))
-    {
-        year_ = 2016;
-    }
-    else if (full_file_path.Contains("Run2018"))
-    {
-        year_ = 2018;
-    }
-    else if (full_file_path.Contains("Run2017"))
-    {
-        year_ = 2017;
-    }
-    else if (full_file_path.Contains("Run2016"))
-    {
-        year_ = 2016;
-    }
-    else
-    {
-        throw std::runtime_error("Nano::setYear():: ERROR - Failed to recognize which year this NanoAOD is !\nPlease make sure the path has one of the following keywords:\n  2016: 'Run2016' or 'RunIISummer16NanoAOD'\n  2017: 'Run2017' or 'RunIIFall17NanoAOD'\n  2018: 'Run2018' or 'RunIIAutumn18NanoAOD'");
+    if (year_ != 2018 && year_ != 2017 && year_ != 2016) {
+        year_ = -999;
+        TString full_file_path = TString(((TFile*) tree->GetCurrentFile())->GetName());
+        if (full_file_path.Contains("RunIIAutumn18NanoAOD"))
+        {
+            year_ = 2018;
+        }
+        else if (full_file_path.Contains("RunIIFall17NanoAOD"))
+        {
+            year_ = 2017;
+        }
+        else if (full_file_path.Contains("RunIISummer16NanoAOD"))
+        {
+            year_ = 2016;
+        }
+        else if (full_file_path.Contains("Run2018"))
+        {
+            year_ = 2018;
+        }
+        else if (full_file_path.Contains("Run2017"))
+        {
+            year_ = 2017;
+        }
+        else if (full_file_path.Contains("Run2016"))
+        {
+            year_ = 2016;
+        }
+        else
+        {
+            throw std::runtime_error("Nano::setYear():: ERROR - Failed to recognize which year this NanoAOD is !\nPlease make sure the path has one of the following keywords:\n  2016: 'Run2016' or 'RunIISummer16NanoAOD'\n  2017: 'Run2017' or 'RunIIFall17NanoAOD'\n  2018: 'Run2018' or 'RunIIAutumn18NanoAOD'");
+        }
     }
 }
 

@@ -4895,7 +4895,7 @@ protected:
     bool loaded_run_;
     Int_t year_;
 public:
-    void Init(TTree *tree);
+    void Init(TTree *tree, int year);
     void setYear(TTree* tree);
     void PrintUsage();
     void GetEntry(unsigned int idx);
