@@ -11,7 +11,8 @@
 #include "./NanoCORE/SSSelections.cc"
 #include "./NanoCORE/MetSelections.cc"
 #include "./NanoCORE/tqdm.h"
-#include "./utilities/util2017/fakes2017.h"
+#include "./utils/util2017/fakes2017.h"
+#include "./utils/fakes.h"
 
 #include <iostream>
 #include <iomanip>
@@ -36,16 +37,20 @@ using namespace std;
 using namespace tas;
 
 int ScanChain(TChain *ch) {
+    // Output
+    TFile* out_tfile = new TFile("output.root", "RECREATE");
+    // Set configuration parameters
+    gconf.year = 2017;
+    // Custom TTree
+    FakesTree* fakes_tree = new FakesTree(gconf.year);
+    TTree* ft_ttree = fakes_tree->t;
     // Initialize looper variables
-    TFile* f1 = new TFile("output.root", "RECREATE");
     int nEventsTotal = 0;
     int nEventsChain = ch->GetEntries();
     TFile *currentFile = 0;
     TObjArray *listOfFiles = ch->GetListOfFiles();
     TIter fileIter(listOfFiles);
     tqdm bar;
-    // Set configuration parameters
-    gconf.year = 2017;
     // File loop
     while ( (currentFile = (TFile*)fileIter.Next()) ) {
         // Open file
@@ -59,60 +64,18 @@ int ScanChain(TChain *ch) {
         nt.Init(tree);
         // Event loop
         for( unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
+            fakes_tree->reset(false);
             // Load event
             nt.GetEntry(event);
             tree->LoadTree(event);
             // Update progress
             nEventsTotal++;
             bar.progress(nEventsTotal, nEventsChain);
-
-            /* --> START analysis code <-- */
-
-            // Get dilepton hypothesis
-            auto leps = getLeptons(gconf.year);
-            auto result = getBestHyp(leps);
-            int hyp_class = result.first;
-            // Veto event if no dilepton hypothesis
-            if (hyp_class < 0) continue;
-            // Retrieve dilepton hypothesis
-            auto best_hyp = result.second;
-            Lepton loose_lep = (best_hyp.first.idlevel == IDloose) ? best_hyp.first : best_hyp.second;
-            Lepton tight_lep = (best_hyp.first.idlevel == IDtight) ? best_hyp.first : best_hyp.second;
-
-            int njets, nbtags;
-            float ht;
-            std::tie(njets,nbtags,ht) = getJetInfo(leps);
-
-            float mll = (lep1.p4()+lep2.p4()).M();
-            int type = lep1.is_el() + lep2.is_el(); // mm, em, ee
-            float met = MET_pt();
-            bool passfilter = passesMETfilters(false);
-
-            // Require one gen-level muon
-            int muon_counter = 0;
-            for (int i = 0; i < nGenPart(); i++) {
-                int this_pdgID = GenPart_pdgId().at(i);
-                if (abs(this_pdgID) == 11) {
-                    muon_counter++;
-                }
-            }
-            if (muon_counter == 0) continue;
-
-            // Application region corresponding to signal region
-            float loose_fr;
-            float tight_fr;
-            float loose_pred;
-            float tight_pred;
-            Lepton fakable_lep;
-            if (hyp_class == tight_loosenottight) {
-                loose_fr = fakeRate(loose_lep.id(), loose_lep.pt(), loose_lep.eta(), ht, true);
-                tight_fr = fakeRate(tight_lep.id(), tight_lep.pt(), tight_lep.eta(), ht, false);
-                loose_pred = loose_fr/(1-loose_fr);
-                tight_pred = tight_fr/(1-tight_fr);
-            }
-
-            /* --> END analysis code <-- */
-
+            // Fill event-level info
+            fakes_tree->event = nt.event();
+            fakes_tree->met = MET_pt();
+            // Fill object-level branches
+            fakes_tree->fillBranches();
         } // END event loop
 
         // Clean up
@@ -122,8 +85,8 @@ int ScanChain(TChain *ch) {
     
     // Wrap up
     bar.finish();
-    f1->Write();
-    f1->Close();
+    ft_ttree->Write();
+    out_tfile->Close();
 
     return 0;
 }
