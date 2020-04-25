@@ -118,6 +118,14 @@ def mkheader(name, branches):
 def mkcpp(name, branches):
     """Make C++ file for function definitions"""
     global TAB
+    typ_map = {
+        "unsigned int": "i",
+        "unsigned long long": "l",
+        "float": "F",
+        "int": "I",
+        "bool": "O",
+        "double": "D"
+    }
 
     Name = name.title()
     name = name.lower()
@@ -126,7 +134,7 @@ def mkcpp(name, branches):
     i = 0
     for branch, typ in branches.iteritems():
         branch_args = "\"{0}\", &{0}, \"{0}/{1}\"".format(branch, 
-                                                          typ[0].upper())
+                                                          typ_map[typ])
         branch_init = ("b_{0} = t->Branch({1});\n".format(branch, 
                                                           branch_args))
         if i > 0:
@@ -152,12 +160,23 @@ def mkcpp(name, branches):
 
     return
 
-def mkttree(name, config_json):
-    with open(config_json, "r") as fin:
-        config = json.load(fin)
+def mkttree(name, config_file):
+    config_type = config_file.split(".")[-1]
     branches = {}
-    for branch, typ in config.iteritems():
-        branches[str(branch)] = str(typ)
+    if config_type == "json":
+        with open(config_file, "r") as fin:
+            config = json.load(fin)
+        for branch, typ in config.iteritems():
+            branches[str(branch)] = str(typ)
+    elif config_type == "txt":
+        with open(config_file, "r") as fin:
+            for line in fin.readlines():
+                split_line = line.split()
+                branch = split_line[-1]
+                typ = " ".join(split_line[:-1])
+                branches[branch] = typ
+    else:
+        print("Invalid file type")
 
     mkheader(name, branches)
     mkcpp(name, branches)
