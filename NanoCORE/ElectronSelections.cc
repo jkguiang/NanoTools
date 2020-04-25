@@ -7,6 +7,7 @@ bool electronID(int iel, IDLevel idlevel, int year){
     switch(year) {
         case(2016):
             return false;
+            break;
         case(2017):
             switch(idlevel) {
                 case(IDveto):
@@ -20,22 +21,8 @@ bool electronID(int iel, IDLevel idlevel, int year){
                     if (!passesElectronMVA(iel,"2017_veto_noiso")) return false;
                     if (!isTriggerSafe_noIso_v3(iel)) return false;
                     return true;
-                case(IDfakable): 
-                    if (Electron_pt()[iel] <= 10) return false;
-                    if (!isTriggerSafe_noIso_v3(iel)) return false;
-                    if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) return false;
-                    if (!Electron_convVeto()[iel]) return false;
-                    if ((int)(Electron_lostHits()[iel]) > 1) return false;
-                    if (fabs(Electron_dxy()[iel]) > 0.05) return false;
-                    if (fabs(Electron_dz()[iel]) >= 0.1) return false;
-                    if (!passesElectronMVA(iel, "2017_veto_noiso")) return false;
-                    if ((int)(Electron_lostHits()[iel]) > 0) return false; //SS_innerlayers
-                    if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) return false;
-                    if (fabs(Electron_sip3d()[iel] ) > 4) return false;
-                    if (!passesElectronMVA(iel, "2017_medium")) return false;
-                    if (!passElectronIso(0.07,0.78,8.0,iel)) return false;
-                    return true;
-                case(IDtight):
+                    break;
+                case(IDfakable):
                     if (Electron_pt()[iel] <= 10) return false;
                     if (!isTriggerSafe_noIso_v3(iel)) return false;
                     if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) return false;
@@ -50,12 +37,32 @@ bool electronID(int iel, IDLevel idlevel, int year){
                     if (!passesElectronMVA(iel, "2017SS_fo_looseMVA_noiso_v6")) return false;
                     if (Electron_miniPFRelIso_all()[iel] >= 0.4) return false;
                     return true;
+                    break;
+                case(IDtight): 
+                    if (Electron_pt()[iel] <= 10) return false;
+                    if (!isTriggerSafe_noIso_v3(iel)) return false;
+                    if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) return false;
+                    if (!Electron_convVeto()[iel]) return false;
+                    if ((int)(Electron_lostHits()[iel]) > 1) return false;
+                    if (fabs(Electron_dxy()[iel]) > 0.05) return false;
+                    if (fabs(Electron_dz()[iel]) >= 0.1) return false;
+                    if (!passesElectronMVA(iel, "2017_veto_noiso")) return false;
+                    if ((int)(Electron_lostHits()[iel]) > 0) return false; //SS_innerlayers
+                    if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) return false;
+                    if (fabs(Electron_sip3d()[iel] ) > 4) return false;
+                    if (!passesElectronMVA(iel, "2017_medium")) return false;
+                    if (!passElectronIso(0.07,0.78,8.0,iel)) return false;
+                    return true;
+                    break;
                 default:
                     cout << "Invalid ID level" << endl;
                     return false;
+                    break;
             }
+            break;
         case(2018):
             return false;
+            break;
     }
 
     return false;
@@ -115,7 +122,7 @@ bool passesElectronMVA(int iel, string id_name){
             break;
 
     }
-        cout<<"wrong !!!!!!!should not see this message!!!! from ElectronSelection.C"<<endl;
+    cout<<"wrong !!!!!!!should not see this message!!!! from ElectronSelection.C"<<endl;
     return 0;
 }
 bool isTriggerSafe_noIso_v3(int iel) {
