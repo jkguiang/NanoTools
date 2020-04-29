@@ -143,7 +143,8 @@ def mkcpp(name, branches):
     branch_resets = ""
     j = 0
     for branch, typ in branches.iteritems():
-        branch_reset = ("{0} = -999;\n".format(branch))
+        reset_val = "false" if typ == "bool" else -999
+        branch_reset = ("{0} = {1};\n".format(branch, reset_val))
         if j > 0:
             branch_reset = TAB+branch_reset
         branch_resets += branch_reset
