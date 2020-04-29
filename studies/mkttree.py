@@ -22,8 +22,6 @@ class {Name}Tree {{
 
         // TTree
         TTree *t;
-        // Target file
-        TFile* f;
 
         /* Initialize branch values */
         {branch_vals}
@@ -160,7 +158,7 @@ def mkcpp(name, branches):
 
     return
 
-def mkttree(name, config_file):
+def mkttree(name, config_file, cleanup=False):
     config_type = config_file.split(".")[-1]
     branches = {}
     if config_type == "json":
@@ -180,6 +178,9 @@ def mkttree(name, config_file):
 
     mkheader(name, branches)
     mkcpp(name, branches)
+    
+    if cleanup:
+        os.remove(config_file)
 
     return
 
@@ -193,6 +194,9 @@ if __name__ == "__main__":
     # Config file
     argparser.add_argument('config', type=str, default=None,
                            help='path to config json file')
+    # Delete branches file
+    argparser.add_argument('--cleanup', dest='cleanup', action='store_true',
+                           help='delete configuration files after finished')
     args = argparser.parse_args()
 
-    mkttree(args.name, args.config)
+    mkttree(args.name, args.config, cleanup=args.cleanup)
