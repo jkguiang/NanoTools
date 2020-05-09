@@ -5,6 +5,14 @@ import json
 import os
 
 TAB = "    "
+TYPE_MAP = {
+    "unsigned int": "i",
+    "unsigned long long": "l",
+    "float": "F",
+    "int": "I",
+    "bool": "O",
+    "double": "D"
+}
 
 def fmtheader(**kwargs):
     header="""#ifndef {NAME}_H
@@ -80,29 +88,40 @@ int {Name}Tree::fillBranches() {{
     """
     return cpp.format(**kwargs)
 
-def mkheader(name, branches):
+def mkname(input_name):
+    """Make properly capitalized name"""
+    input_name = filter(lambda char: char.isalnum() or char == "_", 
+                               input_name)
+    Name = ""
+    name = ""
+    NAME = ""
+    for subname in input_name.split("_"):
+        Name += subname.title()
+        name += subname.lower()
+        NAME += subname.upper()
+
+    return name, Name, NAME
+
+def mkheader(input_name, branch_names, branch_types):
     """Make C++ header file for variable/method declarations"""
     global TAB
 
-    Name = name.title()
-    name = name.lower()
-    NAME = name.upper()
+    name, Name, NAME = mkname(input_name)
 
     branch_pntrs = ""
-    for i, branch in enumerate(branches.keys()):
-        to_append = ("TBranch* b_{0};\n".format(branch))
+    for i, branch_name in enumerate(branch_names):
+        to_append = ("TBranch* b_{0};\n".format(branch_name))
         if i > 0:
             to_append = TAB+to_append
         branch_pntrs += to_append
 
     branch_vals = ""
-    j = 0
-    for branch, typ in branches.iteritems():
-        to_append = ("{0} {1};\n".format(typ, branch))
-        if j > 0:
+    for i, branch_name in enumerate(branch_names):
+        branch_type = branch_types[i]
+        to_append = ("{0} {1};\n".format(branch_type, branch_name))
+        if i > 0:
             to_append = TAB+TAB+to_append
         branch_vals += to_append
-        j += 1
 
     formatted_header = fmtheader(Name=Name, NAME=NAME, 
                                  branch_pntrs=branch_pntrs,
@@ -111,44 +130,36 @@ def mkheader(name, branches):
     with open(os.getcwd()+"/"+name+".h", "w") as fout:
         fout.write(formatted_header)
 
+    print("Wrote declarations for {0}Tree to {1}.h".format(Name, name))
     return
 
-def mkcpp(name, branches):
+def mkcpp(input_name, branch_names, branch_types):
     """Make C++ file for function definitions"""
     global TAB
-    typ_map = {
-        "unsigned int": "i",
-        "unsigned long long": "l",
-        "float": "F",
-        "int": "I",
-        "bool": "O",
-        "double": "D"
-    }
+    global TYPE_MAP
 
-    Name = name.title()
-    name = name.lower()
+    name, Name, _ = mkname(input_name)
 
     branch_inits = ""
-    i = 0
-    for branch, typ in branches.iteritems():
-        branch_args = "\"{0}\", &{0}, \"{0}/{1}\"".format(branch, 
-                                                          typ_map[typ])
-        branch_init = ("b_{0} = t->Branch({1});\n".format(branch, 
+    for i, branch_name in enumerate(branch_names):
+        branch_type = branch_types[i]
+        branch_ROOT = TYPE_MAP[branch_type]
+        branch_args = "\"{0}\", &{0}, \"{0}/{1}\"".format(branch_name, 
+                                                          branch_ROOT)
+        branch_init = ("b_{0} = t->Branch({1});\n".format(branch_name, 
                                                           branch_args))
         if i > 0:
             branch_init = TAB+branch_init
         branch_inits += branch_init
-        i += 1
 
     branch_resets = ""
-    j = 0
-    for branch, typ in branches.iteritems():
-        reset_val = "false" if typ == "bool" else -999
-        branch_reset = ("{0} = {1};\n".format(branch, reset_val))
-        if j > 0:
+    for i, branch_name in enumerate(branch_names):
+        branch_type = branch_types[i]
+        reset_val = "false" if branch_type == "bool" else -999
+        branch_reset = ("{0} = {1};\n".format(branch_name, reset_val))
+        if i > 0:
             branch_reset = TAB+branch_reset
         branch_resets += branch_reset
-        j += 1
 
     formatted_cpp = fmtcpp(Name=Name, name=name,
                            branch_inits=branch_inits,
@@ -157,28 +168,37 @@ def mkcpp(name, branches):
     with open(os.getcwd()+"/"+name+".C", "w") as fout:
         fout.write(formatted_cpp)
 
+    print("Wrote definitions for {0}Tree to {1}.C".format(Name, name))
     return
 
-def mkttree(name, config_file, cleanup=False):
+def mkttree(input_name, config_file, cleanup=False):
     config_type = config_file.split(".")[-1]
-    branches = {}
+    branch_names = []
+    branch_types = []
     if config_type == "json":
         with open(config_file, "r") as fin:
             config = json.load(fin)
         for branch, typ in config.iteritems():
-            branches[str(branch)] = str(typ)
+            branch_names.append(branch)
+            branch_types.append(typ)
     elif config_type == "txt":
         with open(config_file, "r") as fin:
             for line in fin.readlines():
                 split_line = line.split()
-                branch = split_line[-1]
-                typ = " ".join(split_line[:-1])
-                branches[branch] = typ
+                input_bname = split_line[-1]
+                input_btype = " ".join(split_line[:-1])
+                if input_btype not in TYPE_MAP.keys():
+                    print("Error: Invalid type in the line below")
+                    print(line)
+                    return
+                branch_names.append(filter(lambda char: char.isalnum() or char == "_", 
+                                           input_bname))
+                branch_types.append(input_btype)
     else:
         print("Invalid file type")
 
-    mkheader(name, branches)
-    mkcpp(name, branches)
+    mkheader(input_name, branch_names, branch_types)
+    mkcpp(input_name, branch_names, branch_types)
     
     if cleanup:
         os.remove(config_file)
