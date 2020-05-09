@@ -11,14 +11,13 @@
 #include "./NanoCORE/SSSelections.cc"
 #include "./NanoCORE/MetSelections.cc"
 #include "./NanoCORE/tqdm.h"
-#include "./utils/util2017/fakes2017.h"
-#include "./utils/fakes.h"
+#include "./monolep.h"
 
 #include <iostream>
 #include <iomanip>
 
 #define SUM(vec) std::accumulate((vec).begin(), (vec).end(), 0);
-#define SUM_GT(vec,num) std::accumulate((vec).begin(), (vec).end(), 0, [](float x,float y){return ((y > (num)) ? x+y : x); });
+#define SUM_GT(vec,num) std::accumulate((vec).begin(), (vec).end(), 0, [](float x,float y){ return ((y > (num)) ? x+y : x); });
 #define COUNT_GT(vec,num) std::count_if((vec).begin(), (vec).end(), [](float x) { return x > (num); });
 #define COUNT_LT(vec,num) std::count_if((vec).begin(), (vec).end(), [](float x) { return x < (num); });
 
@@ -36,14 +35,14 @@ struct debugger { template<typename T> debugger& operator , (const T& v) { cerr<
 using namespace std;
 using namespace tas;
 
-int ScanChain(TChain *ch) {
+int MonolepChain(TChain *ch, TString out_name) {
     // Output
-    TFile* out_tfile = new TFile("output.root", "RECREATE");
+    TFile* out_tfile = new TFile(out_name, "RECREATE");
     // Set configuration parameters
     gconf.year = 2017;
     // Custom TTree
-    FakesTree* fakes_tree = new FakesTree(gconf.year);
-    TTree* ft_ttree = fakes_tree->t;
+    MonolepTree* lep_tree = new MonolepTree();
+    TTree* lt_ttree = lep_tree->t;
     // Initialize looper variables
     int nEventsTotal = 0;
     int nEventsChain = ch->GetEntries();
@@ -63,19 +62,24 @@ int ScanChain(TChain *ch) {
         auto psRead = new TTreePerfStats("readPerf", tree);
         nt.Init(tree);
         // Event loop
-        for( unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
-            fakes_tree->reset(false);
+        for(unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
+            lep_tree->reset();
             // Load event
             nt.GetEntry(event);
             tree->LoadTree(event);
             // Update progress
             nEventsTotal++;
             bar.progress(nEventsTotal, nEventsChain);
-            // Fill event-level info
-            fakes_tree->event = nt.event();
-            fakes_tree->met = MET_pt();
-            // Fill object-level branches
-            fakes_tree->fillBranches();
+            // Prevent weird jet size issue
+            if (nJet() < 96) {
+                // Fill event-level info
+                lep_tree->fillEvtBranches();
+                // Fill object-level branches
+                lep_tree->fillLepBranches();
+                if (lep_tree->fake_id != -999 && lep_tree->lepton_id != -999) {
+                    lt_ttree->Fill();
+                }
+            }
         } // END event loop
 
         // Clean up
@@ -85,7 +89,8 @@ int ScanChain(TChain *ch) {
     
     // Wrap up
     bar.finish();
-    ft_ttree->Write();
+    out_tfile->cd();
+    lt_ttree->Write();
     out_tfile->Close();
 
     return 0;
