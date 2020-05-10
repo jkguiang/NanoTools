@@ -87,6 +87,9 @@ void MonolepTree::reset() {
     fake_from_b = false;
     fake_from_c = false;
     fake_from_light = false;
+    /* Reset internal values */
+    lepton_jet_index = 999;
+    fake_jet_index = 999;
 
     return;
 }
@@ -137,6 +140,12 @@ int MonolepTree::fillEvtBranches() {
     deepJet_btags_medium = 0;
     deepJet_btags_tight  = 0;
     for (unsigned int i = 0; i < nJet(); i++) {
+        // eta veto
+        if (abs(Jet_eta().at(i)) > 2.4) continue;
+        // pt veto
+        if (Jet_pt().at(i) < 30) continue;
+        // Lepton overlap veto
+        if (i == fake_jet_index || i == lepton_jet_index) continue;
         float deepCSV_disc = Jet_btagDeepB().at(i);
         if (deepCSV_disc >= deepCSV_loose) {
             deepCSV_btags_loose++;
@@ -171,30 +180,32 @@ int MonolepTree::fillLepBranches() {
     }
     else if (monolep_id == single_mu) {
         // Truth-matched to single muon event -> electrons == fakes
-        int fake_index = 0;
+        int fake_el_index = 0;
         int n_tight_fakes = 0;
         for (unsigned int i = 0; i < nElectron(); i++) {
             if (electronID(i, IDtight, gconf.year)) {
-                fake_index = i;
+                fake_el_index = i;
                 n_tight_fakes++;
             }
         }
         if (n_tight_fakes == 1) {
-            saveLepton(Electron_pdgId().at(fake_index), fake_index, false);
+            fake_jet_index = Electron_jetIdx().at(fake_el_index);
+            saveLepton(Electron_pdgId().at(fake_el_index), fake_el_index, false);
         }
     }
     else if (monolep_id == single_el) {
         // Truth-matched to single electron event -> muons == fakes
-        int fake_index = 0;
+        int fake_mu_index = 0;
         int n_tight_fakes = 0;
         for (unsigned int i = 0; i < nMuon(); i++) {
             if (muonID(i, IDtight, gconf.year)) {
-                fake_index = i;
+                fake_mu_index = i;
                 n_tight_fakes++;
             }
         }
         if (n_tight_fakes == 1) {
-            saveLepton(Muon_pdgId().at(fake_index), fake_index, false);
+            fake_jet_index = Muon_jetIdx().at(fake_mu_index);
+            saveLepton(Muon_pdgId().at(fake_mu_index), fake_mu_index, false);
         }
     }
 
@@ -314,12 +325,14 @@ MonolepID MonolepTree::whichGenMonolep() {
 
     if (truth_matched_els == 1 && truth_matched_mus == 0) {
         if (electronID(prompt_el_index, IDtight, gconf.year)) {
+            lepton_jet_index = Electron_jetIdx().at(prompt_el_index);
             saveLepton(Electron_pdgId().at(prompt_el_index), prompt_el_index, true);
         }
         return single_el;
     }
     else if (truth_matched_els == 0 && truth_matched_mus == 1) {
         if (muonID(prompt_mu_index, IDtight, gconf.year)) {
+            lepton_jet_index = Muon_jetIdx().at(prompt_mu_index);
             saveLepton(Muon_pdgId().at(prompt_mu_index), prompt_mu_index, true);
         }
         return single_mu;
