@@ -72,11 +72,11 @@ int MonolepChain(TChain *ch, TString out_name) {
             bar.progress(nEventsTotal, nEventsChain);
             // Prevent weird jet size issue
             if (nJet() < 96) {
-                // Fill event-level info
-                lep_tree->fillEvtBranches();
                 // Fill object-level branches
                 lep_tree->fillLepBranches();
                 if (lep_tree->fake_id != -999 && lep_tree->lepton_id != -999) {
+                    // Fill event-level info
+                    lep_tree->fillEvtBranches();
                     lt_ttree->Fill();
                 }
             }

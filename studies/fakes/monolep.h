@@ -76,6 +76,10 @@ class MonolepTree {
         bool fake_from_c;
         bool fake_from_light;
 
+        /* Initialize internal values */
+        unsigned int lepton_jet_index;
+        unsigned int fake_jet_index;
+
         /* Methods */
         // Constructor
         MonolepTree();
