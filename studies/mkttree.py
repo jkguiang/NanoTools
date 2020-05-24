@@ -28,20 +28,27 @@ class {Name}Tree {{
     {branch_pntrs}
     public:
 
-        // TTree
-        TTree *t;
+        // TTree and TFile
+        TTree* ttree;
+        TFile* tfile;
 
         /* Initialize branch values */
         {branch_vals}
+
+        /* Initialize other values */
+        // -> Your values here <-
+
         /* Methods */
         // Constructor
-        {Name}Tree();
+        {Name}Tree(TFile* new_tfile);
         // Reset variables
-        void reset();
+        void resetBranches();
         // Fillers
         int fillBranches();
         // Other
-        /* Your methods here */
+        void fillTTree();
+        void writeTFile();
+        // -> Your methods here <-
 }};
 
 #endif
@@ -68,22 +75,36 @@ def fmtcpp(**kwargs):
 // Namespaces
 using namespace std;
 
-{Name}Tree::{Name}Tree() {{
-    // TTree
-    t = new TTree("tree", "tree");
+{Name}Tree::{Name}Tree(TFile* new_tfile) {{
+    // TTree and TFile
+    ttree = new TTree("tree", "tree");
+    tfile = new_tfile;
     // Branches
     {branch_inits}
 }}
 
-void {Name}Tree::reset() {{
+void {Name}Tree::resetBranches() {{
     // Reset branch values
     {branch_resets}
+    // Reset other values
     return;
 }}
 
 int {Name}Tree::fillBranches() {{
     /* Your code here */
     return 0;
+}}
+
+void {Name}Tree::fillTTree() {{
+    ttree->Fill();
+    return;
+}}
+
+void {Name}Tree::writeTFile() {{
+    tfile->cd();
+    ttree->Write();
+    tfile->Close();
+    return;
 }}
     """
     return cpp.format(**kwargs)
@@ -146,8 +167,8 @@ def mkcpp(input_name, branch_names, branch_types):
         branch_ROOT = TYPE_MAP[branch_type]
         branch_args = "\"{0}\", &{0}, \"{0}/{1}\"".format(branch_name, 
                                                           branch_ROOT)
-        branch_init = ("b_{0} = t->Branch({1});\n".format(branch_name, 
-                                                          branch_args))
+        branch_init = ("b_{0} = ttree->Branch({1});\n".format(branch_name, 
+                                                              branch_args))
         if i > 0:
             branch_init = TAB+branch_init
         branch_inits += branch_init
