@@ -37,12 +37,11 @@ using namespace tas;
 
 int MonolepChain(TChain *ch, TString out_name) {
     // Output
-    TFile* out_tfile = new TFile(out_name, "RECREATE");
+    TFile* reco_tfile = new TFile(out_name, "RECREATE");
     // Set configuration parameters
     gconf.year = 2017;
     // Custom TTree
-    MonolepTree* lep_tree = new MonolepTree();
-    TTree* lt_ttree = lep_tree->t;
+    MonolepTree* reco_tree = new MonolepTree(reco_tfile);
     // Initialize looper variables
     int nEventsTotal = 0;
     int nEventsChain = ch->GetEntries();
@@ -53,7 +52,7 @@ int MonolepChain(TChain *ch, TString out_name) {
     // File loop
     while ( (currentFile = (TFile*)fileIter.Next()) ) {
         // Open file
-        TFile *file = TFile::Open( currentFile->GetTitle() );
+        TFile *file = TFile::Open(currentFile->GetTitle());
         TTree *tree = (TTree*)file->Get("Events");
         TString filename(currentFile->GetTitle());
         // TTree configuration
@@ -63,23 +62,21 @@ int MonolepChain(TChain *ch, TString out_name) {
         nt.Init(tree);
         // Event loop
         for(unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
-            lep_tree->reset();
+            // Reset tree
+            reco_tree->resetBranches();
             // Load event
             nt.GetEntry(event);
             tree->LoadTree(event);
             // Update progress
             nEventsTotal++;
             bar.progress(nEventsTotal, nEventsChain);
+
+            /* Analysis code */
             // Prevent weird jet size issue
             if (nJet() < 96) {
-                // Fill object-level branches
-                lep_tree->fillLepBranches();
-                if (lep_tree->fake_id != -999 && lep_tree->lepton_id != -999) {
-                    // Fill event-level info
-                    lep_tree->fillEvtBranches();
-                    lt_ttree->Fill();
-                }
+                reco_tree->fillBranches();
             }
+
         } // END event loop
 
         // Clean up
@@ -89,9 +86,7 @@ int MonolepChain(TChain *ch, TString out_name) {
     
     // Wrap up
     bar.finish();
-    out_tfile->cd();
-    lt_ttree->Write();
-    out_tfile->Close();
+    reco_tree->writeTFile();
 
     return 0;
 }
