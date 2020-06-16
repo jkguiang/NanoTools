@@ -3,16 +3,6 @@
 #include "Nano.h"
 #include "IsolationTools.h"
 
-enum IDLevel
-{
-    IDdefault = -1,
-    IDveto = 0, // for Z-veto
-    IDfakablenoiso = 1,
-    IDfakable = 2, // for fake background + jet cleaning
-    IDtightnoiso = 3,
-    IDtight = 4 // for analysis
-};
-
 IDLevel whichLeptonLevel(int id, int idx);
 
 struct Lepton
@@ -23,6 +13,7 @@ struct Lepton
         {
             pt_ = (abs(id_) == 11 ? nt.Electron_pt()[idx_] : nt.Muon_pt()[idx_]);
             eta_ = (abs(id_) == 11 ? nt.Electron_eta()[idx_] : nt.Muon_eta()[idx_]);
+            phi_ = (abs(id_) == 11 ? nt.Electron_phi()[idx_] : nt.Muon_phi()[idx_]);
             p4_ = (abs(id_) == 11 ? nt.Electron_p4()[idx_] : nt.Muon_p4()[idx_]);
             idlevel_ = whichLeptonLevel(id_, idx_);
         }
@@ -38,10 +29,12 @@ struct Lepton
     LorentzVector p4() {return p4_;}
     float pt() {return pt_;}
     float eta() {return eta_;}
+    float phi() {return phi_;}
 private:
     int id_;
     float pt_ = 0.;
     float eta_ = 0.;
+    float phi_ = 0.;
     LorentzVector p4_;
     unsigned int idx_;
     int idlevel_ = IDdefault;
@@ -64,17 +57,19 @@ std::ostream& operator << (std::ostream& os, std::pair<T1, T2>& p)
 
 vector<Lepton> getLeptons();
 std::tuple<int, int, float> getJetInfo(vector<Lepton>& leps, int variation = 0);
-std::pair<int, Hyp> getBestHyp(vector<Lepton>& leptons);
-bool isTriggerSafenoIso_v1(int iel);
-bool isTriggerSafeIso_v1(int iel);
-bool passesElectronMVA(int idlevel, int iel);
-bool isGoodMuon(int imu);
-bool isGoodElectron(int iel);
-bool isVetoMuon(int imu);
-bool isVetoElectron(int iel);
-bool isFakableMuon(int imu);
-bool isFakableElectron(int iel);
+std::pair<int, int> makesResonance(Leptons& leps, Lepton lep1, Lepton lep2, float mass, float window);
+std::pair<int, Hyp> getBestHyp(vector<Lepton>& leptons, bool verbose);
+// bool isTriggerSafenoIso_v1(int iel);
+// bool isTriggerSafeIso_v1(int iel);
+// bool passesElectronMVA(int idlevel, int iel);
+// bool isGoodMuon(int imu);
+// bool isGoodElectron(int iel);
+// bool isVetoMuon(int imu);
+// bool isVetoElectron(int iel);
+// bool isFakableMuon(int imu);
+// bool isFakableElectron(int iel);
 bool isLeptonLevel(IDLevel idlevel, int id, int idx);
 void dumpLeptonProperties(Lepton lep);
+float coneCorrPt(int id, int idx, float multiiso_minireliso, float multiiso_ptratio, float multiiso_ptrel);
 
 #endif

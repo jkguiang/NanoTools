@@ -2,6 +2,7 @@
 #define ELECTRONSELECTIONS_H
 #include "Nano.h"
 
+bool verboseElectronID(int elIdx, IDLevel idlevel, int year);
 bool electronID(int elIdx, IDLevel idlevel, int year);
 float electronMVACut(float A, float B, float C, float pt);
 bool passesElectronMVA(int iel, string id_name);

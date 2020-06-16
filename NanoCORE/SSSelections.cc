@@ -1,4 +1,7 @@
 #include "SSSelections.h"
+#include "Config.h"
+#include "ElectronSelections.h"
+#include "MuonSelections.h"
 
 using namespace tas;
 
@@ -192,35 +195,35 @@ std::pair<int, int> makesResonance(Leptons& leps, Lepton lep1, Lepton lep2, floa
             }
         }
     }
-    // for (unsigned int iel = 0; iel < Electron_pt().size(); iel++) {
-    //     if ((iel == lep1.idx() && lep1.is_el()) || (iel == lep2.idx() && lep2.is_el())) continue;
-    //     if (fabs(Electron_eta()[iel]) > 2.4) continue;
-    //     if (fabs(Electron_pt()[iel]) < 7) continue;
-    //     if (!isVetoElectron(iel)) continue;
-    //     if (lep1.is_el() && (lep1.id() * Electron_pdgId()[iel] < 0) && (fabs((lep1.p4() + Electron_p4()[iel]).M()-mass) < window)) {
-    //         return {1,iel};
-    //     }
-    //     if (lep2.is_el() && (lep2.id() * Electron_pdgId()[iel] < 0) && (fabs((lep2.p4() + Electron_p4()[iel]).M()-mass) < window)) {
-    //         return {2,iel};
-    //     }
-    // }
-    // for (unsigned int imu = 0; imu < Muon_pt().size(); imu++) {
-    //     if ((imu == lep1.idx() && lep1.is_mu()) || (imu == lep2.idx() && lep2.is_mu())) continue;
-    //     if (fabs(Muon_eta()[imu]) > 2.4) continue;
-    //     if (fabs(Muon_pt()[imu]) < 5) continue;
-    //     if (!isVetoMuon(imu)) continue;
-    //     if (lep1.is_mu() && (lep1.id() * Muon_pdgId()[imu] < 0) && (fabs((lep1.p4() + Muon_p4()[imu]).M()-mass) < window)) {
-    //         return {1,imu};
-    //     }
-    //     if (lep2.is_mu() && (lep2.id() * Muon_pdgId()[imu] < 0) && (fabs((lep2.p4() + Muon_p4()[imu]).M()-mass) < window)) {
-    //         return {2,imu};
-    //     }
-    // }
+    for (unsigned int iel = 0; iel < Electron_pt().size(); iel++) {
+        if ((iel == lep1.idx() && lep1.is_el()) || (iel == lep2.idx() && lep2.is_el())) continue;
+        if (fabs(Electron_eta()[iel]) > 2.4) continue;
+        if (fabs(Electron_pt()[iel]) < 7) continue;
+        if (!electronID(iel, IDveto, gconf.year)) continue;
+        if (lep1.is_el() && (lep1.id() * Electron_pdgId()[iel] < 0) && (fabs((lep1.p4() + Electron_p4()[iel]).M()-mass) < window)) {
+            return {1,iel};
+        }
+        if (lep2.is_el() && (lep2.id() * Electron_pdgId()[iel] < 0) && (fabs((lep2.p4() + Electron_p4()[iel]).M()-mass) < window)) {
+            return {2,iel};
+        }
+    }
+    for (unsigned int imu = 0; imu < Muon_pt().size(); imu++) {
+        if ((imu == lep1.idx() && lep1.is_mu()) || (imu == lep2.idx() && lep2.is_mu())) continue;
+        if (fabs(Muon_eta()[imu]) > 2.4) continue;
+        if (fabs(Muon_pt()[imu]) < 5) continue;
+        if (!muonID(imu, IDveto, gconf.year)) continue;
+        if (lep1.is_mu() && (lep1.id() * Muon_pdgId()[imu] < 0) && (fabs((lep1.p4() + Muon_p4()[imu]).M()-mass) < window)) {
+            return {1,imu};
+        }
+        if (lep2.is_mu() && (lep2.id() * Muon_pdgId()[imu] < 0) && (fabs((lep2.p4() + Muon_p4()[imu]).M()-mass) < window)) {
+            return {2,imu};
+        }
+    }
     return {-1, -1};
 }
 
 
-std::pair<int, Hyp> getBestHyp(Leptons& leptons)
+std::pair<int, Hyp> getBestHyp(Leptons& leptons, bool verbose)
 {
     int hyp_class = -1;
     Hyp best_hyp;
@@ -235,8 +238,35 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
     {
         for (unsigned int j = i + 1; j < leptons.size(); j++)
         {
+            // DEBUG
             auto& lep1 = leptons[i];
             auto& lep2 = leptons[j];
+            if (verbose) {
+                cout << "I can read the gconf year. It's " << gconf.year << " ok?? Get off my back." << endl;
+                bool DEBUG_isss = lep1.charge() == lep2.charge();
+                auto DEBUG_z_result = makesResonance(leptons, lep1, lep2, 91., 15.);
+                auto DEBUG_gammastar_result = makesResonance(leptons, lep1, lep2, 0., 12.);
+                bool DEBUG_extraZ = DEBUG_z_result.first >= 0;
+                bool DEBUG_extraGammaStar = DEBUG_gammastar_result.first >= 0;
+                cout << "hyp " << i << " leptons: " << lep2.id() << " " << lep2.pt() << " (idx: " << lep2.idx() << ") " << lep1.id() << " " << lep1.pt() << " (idx: " << lep1.idx() << ")" << endl;
+                cout << "   isss: " << DEBUG_isss << endl;
+                cout << "   extraZ: " << DEBUG_extraZ << endl;
+                cout << "   extraG: " << DEBUG_extraGammaStar << endl;
+                cout << "   invt mass: " << (lep2.p4()+lep1.p4()).M() << endl;
+                cout << "   passes eta: " << ((lep2.is_el() ? fabs(lep2.eta()) < 2.5 : fabs(lep2.eta()) < 2.4) && (lep1.is_el() ? fabs(lep1.eta()) < 2.5 : fabs(lep1.eta()) < 2.4)) << " etas are " << lep2.eta() << " and " << lep1.eta() << endl;
+                cout << "   passes hypsFromFirstGoodVertex: " << "missing?" << endl;
+                cout << "   lepton with pT " << lep2.pt() << " passes numer,denom id: " << (lep2.idlevel() == IDtight) << "," << (lep2.idlevel() >= IDfakable) << endl;
+                cout << "   lepton with pT " << lep1.pt() << " passes numer,denom id: " << (lep1.idlevel() == IDtight) << "," << (lep1.idlevel() >= IDfakable) << endl;
+                cout << "   lowMassVeto: " << ((lep2.p4() + lep1.p4()).M() < 8) << endl;
+            }
+            if (lep1.is_el() && verbose) {
+                cout << "Lepton with pT " << lep1.pt() << "info dump:" << endl;
+                verboseElectronID(lep1.idx(), IDfakable, lep1.id());
+            }
+            if (lep2.is_el() && verbose) {
+                cout << "Lepton with pT " << lep2.pt() << "info dump:" << endl;
+                verboseElectronID(lep2.idx(), IDfakable, lep2.id());
+            }
             if (lep1.idlevel() < IDfakable || lep2.idlevel() < IDfakable)
             {
                 continue;
@@ -284,8 +314,10 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
             auto gammastar_result = makesResonance(leptons, lep1, lep2, 0., 12.);
             bool extraZ = z_result.first >= 0;
             bool extraGammaStar = gammastar_result.first >= 0;
+            int DEBUG_hyp_class = -1;
             if ((extraZ || extraGammaStar) && isss)
             {
+                DEBUG_hyp_class = 6;
                 if (lep1.pt() > lep2.pt())
                     hyp6s.push_back({lep1, lep2});
                 else
@@ -293,13 +325,15 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
             }
             else if (ntight == 2 && isss)
             {
+                DEBUG_hyp_class = 3;
                 if (lep1.pt() > lep2.pt())
                     hyp3s.push_back({lep1, lep2});
                 else
                     hyp3s.push_back({lep2, lep1});
             }
-            else if (ntight == 0 && nloose == 2 && isss)
+            else if (nloose == 2 && isss)
             {
+                DEBUG_hyp_class = 1;
                 if (lep1.pt() > lep2.pt())
                     hyp1s.push_back({lep1, lep2});
                 else
@@ -307,6 +341,7 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
             }
             else if (ntight == 1 && nloose == 1 && isss)
             {
+                DEBUG_hyp_class = 2;
                 if (lep1.pt() > lep2.pt())
                     hyp2s.push_back({lep1, lep2});
                 else
@@ -314,11 +349,13 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
             }
             else if (ntight == 2 && !isss)
             {
+                DEBUG_hyp_class = 4;
                 if (lep1.pt() > lep2.pt())
                     hyp4s.push_back({lep1, lep2});
                 else
                     hyp4s.push_back({lep2, lep1});
             }
+            if (verbose) cout << "hyp #" << i << " hyp_class: " << DEBUG_hyp_class << endl;
         }
     }
     vector<Hyp> hyps;
@@ -378,283 +415,283 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons)
 
 
 
-bool isTriggerSafenoIso_v1(int iel)
-{
-    float etaSC = Electron_eta()[iel] + Electron_deltaEtaSC()[iel];
-    if (fabs(etaSC) <= 1.479)
-    {
-        if (Electron_sieie()[iel] >= 0.011)
-        {
-            return false;
-        }
-        if (Electron_hoe()[iel] >= 0.08)
-        {
-            return false;
-        }
-        // if (fabs(els_dEtaIn().at(iel)) >= 0.01) return false; // NOTE missing
-        // if (fabs(els_dPhiIn().at(iel)) >= 0.04) return false; // NOTE missing
-        if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01)
-        {
-            return false;
-        }
-    }
-    else if ((fabs(etaSC) > 1.479) && (fabs(etaSC) < 2.5))
-    {
-        if (Electron_sieie()[iel] >= 0.031)
-        {
-            return false;
-        }
-        if (Electron_hoe()[iel] >= 0.08)
-        {
-            return false;
-        }
-        // if (fabs(els_dEtaIn().at(iel)) >= 0.01) return false;
-        // if (fabs(els_dPhiIn().at(iel)) >= 0.08) return false;
-        if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01)
-        {
-            return false;
-        }
-    }
-    return true;
-}
+// bool isTriggerSafenoIso_v1(int iel)
+// {
+//     float etaSC = Electron_eta()[iel] + Electron_deltaEtaSC()[iel];
+//     if (fabs(etaSC) <= 1.479)
+//     {
+//         if (Electron_sieie()[iel] >= 0.011)
+//         {
+//             return false;
+//         }
+//         if (Electron_hoe()[iel] >= 0.08)
+//         {
+//             return false;
+//         }
+//         // if (fabs(els_dEtaIn().at(iel)) >= 0.01) return false; // NOTE missing
+//         // if (fabs(els_dPhiIn().at(iel)) >= 0.04) return false; // NOTE missing
+//         if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01)
+//         {
+//             return false;
+//         }
+//     }
+//     else if ((fabs(etaSC) > 1.479) && (fabs(etaSC) < 2.5))
+//     {
+//         if (Electron_sieie()[iel] >= 0.031)
+//         {
+//             return false;
+//         }
+//         if (Electron_hoe()[iel] >= 0.08)
+//         {
+//             return false;
+//         }
+//         // if (fabs(els_dEtaIn().at(iel)) >= 0.01) return false;
+//         // if (fabs(els_dPhiIn().at(iel)) >= 0.08) return false;
+//         if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01)
+//         {
+//             return false;
+//         }
+//     }
+//     return true;
+// }
 
-bool isTriggerSafeIso_v1(int iel)
-{
-    if (!isTriggerSafenoIso_v1(iel))
-    {
-        return false;
-    }
-    if (Electron_dr03EcalRecHitSumEt()[iel] / Electron_pt()[iel] >= 0.45)
-    {
-        return false;
-    }
-    if (Electron_dr03HcalDepth1TowerSumEt()[iel] / Electron_pt()[iel] >= 0.25)
-    {
-        return false;
-    }
-    if (Electron_dr03TkSumPt()[iel] / Electron_pt()[iel] >= 0.2)
-    {
-        return false;
-    }
-    return true;
-}
+// bool isTriggerSafeIso_v1(int iel)
+// {
+//     if (!isTriggerSafenoIso_v1(iel))
+//     {
+//         return false;
+//     }
+//     if (Electron_dr03EcalRecHitSumEt()[iel] / Electron_pt()[iel] >= 0.45)
+//     {
+//         return false;
+//     }
+//     if (Electron_dr03HcalDepth1TowerSumEt()[iel] / Electron_pt()[iel] >= 0.25)
+//     {
+//         return false;
+//     }
+//     if (Electron_dr03TkSumPt()[iel] / Electron_pt()[iel] >= 0.2)
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
-bool passesElectronMVA(int idlevel, int iel)
-{
-    // C if pT<10, A if pT=10, B if pt>=25, lerp between A,B for pT in [10,25]
-    auto mvacut = [](float A, float B, float C, float pt_)
-    {
-        if (pt_ < 10)
-        {
-            return C;
-        }
-        else if (pt_ > 25)
-        {
-            return B;
-        }
-        else
-        {
-            return A + (B - A) / 15.0f * (pt_ - 10.0f);
-        }
-    };
-    float mva = Electron_mvaFall17V1noIso()[iel];
-    float pt = Electron_pt()[iel];
-    float aeta = fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]);
-    if (idlevel == IDtight)
-    {
-        if (aeta < 0.8)
-        {
-            return mva > mvacut(0.2, 0.68, 0.2, pt);
-        }
-        if ((aeta >= 0.8 && aeta <= 1.479))
-        {
-            return mva > mvacut(0.1, 0.475, 0.1, pt);
-        }
-        if (aeta > 1.479)
-        {
-            return mva > mvacut(-0.1, 0.32, -0.1, pt);
-        }
-    }
-    else if (idlevel == IDfakable)
-    {
-        if (aeta < 0.8)
-        {
-            return mva > mvacut(-0.788, -0.64, 0.488, pt);
-        }
-        if ((aeta >= 0.8 && aeta <= 1.479))
-        {
-            return mva > mvacut(-0.85, -0.775, -0.045, pt);
-        }
-        if (aeta > 1.479)
-        {
-            return mva > mvacut(-0.81, -0.733, 0.176, pt);
-        }
-    }
-    else if (idlevel == IDveto)
-    {
-        if (aeta < 0.8)
-        {
-            return mva > mvacut(-0.788, -0.64, 0.488, pt);
-        }
-        if ((aeta >= 0.8 && aeta <= 1.479))
-        {
-            return mva > mvacut(-0.85, -0.775, -0.045, pt);
-        }
-        if (aeta > 1.479)
-        {
-            return mva > mvacut(-0.81, -0.733, 0.176, pt);
-        }
-    }
-    return false;
-}
+// bool passesElectronMVA(int idlevel, int iel)
+// {
+//     // C if pT<10, A if pT=10, B if pt>=25, lerp between A,B for pT in [10,25]
+//     auto mvacut = [](float A, float B, float C, float pt_)
+//     {
+//         if (pt_ < 10)
+//         {
+//             return C;
+//         }
+//         else if (pt_ > 25)
+//         {
+//             return B;
+//         }
+//         else
+//         {
+//             return A + (B - A) / 15.0f * (pt_ - 10.0f);
+//         }
+//     };
+//     float mva = Electron_mvaFall17V1noIso()[iel];
+//     float pt = Electron_pt()[iel];
+//     float aeta = fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]);
+//     if (idlevel == IDtight)
+//     {
+//         if (aeta < 0.8)
+//         {
+//             return mva > mvacut(0.2, 0.68, 0.2, pt);
+//         }
+//         if ((aeta >= 0.8 && aeta <= 1.479))
+//         {
+//             return mva > mvacut(0.1, 0.475, 0.1, pt);
+//         }
+//         if (aeta > 1.479)
+//         {
+//             return mva > mvacut(-0.1, 0.32, -0.1, pt);
+//         }
+//     }
+//     else if (idlevel == IDfakable)
+//     {
+//         if (aeta < 0.8)
+//         {
+//             return mva > mvacut(-0.788, -0.64, 0.488, pt);
+//         }
+//         if ((aeta >= 0.8 && aeta <= 1.479))
+//         {
+//             return mva > mvacut(-0.85, -0.775, -0.045, pt);
+//         }
+//         if (aeta > 1.479)
+//         {
+//             return mva > mvacut(-0.81, -0.733, 0.176, pt);
+//         }
+//     }
+//     else if (idlevel == IDveto)
+//     {
+//         if (aeta < 0.8)
+//         {
+//             return mva > mvacut(-0.788, -0.64, 0.488, pt);
+//         }
+//         if ((aeta >= 0.8 && aeta <= 1.479))
+//         {
+//             return mva > mvacut(-0.85, -0.775, -0.045, pt);
+//         }
+//         if (aeta > 1.479)
+//         {
+//             return mva > mvacut(-0.81, -0.733, 0.176, pt);
+//         }
+//     }
+//     return false;
+// }
 
-bool isVetoElectron(int iel)
-{
-    if (Electron_pt()[iel] < 7)
-    {
-        return false;
-    }
-    if (Electron_miniPFRelIso_all()[iel] > 0.4)
-    {
-        return false;
-    }
-    if (Electron_convVeto()[iel] == 0)
-    {
-        return false;
-    }
-    if (Electron_lostHits()[iel] > 1)
-    {
-        return false;
-    }
-    if (fabs(Electron_dxy()[iel]) > 0.05)
-    {
-        return false;
-    }
-    if (fabs(Electron_dz()[iel]) >= 0.1)
-    {
-        return false;
-    }
-    if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
-    {
-        return false;
-    }
-    if (!passesElectronMVA(IDveto, iel))
-    {
-        return false;
-    }
-    if (!isTriggerSafenoIso_v1(iel))
-    {
-        return false;
-    }
-    return true;
-}
+// bool isVetoElectron(int iel)
+// {
+//     if (Electron_pt()[iel] < 7)
+//     {
+//         return false;
+//     }
+//     if (Electron_miniPFRelIso_all()[iel] > 0.4)
+//     {
+//         return false;
+//     }
+//     if (Electron_convVeto()[iel] == 0)
+//     {
+//         return false;
+//     }
+//     if (Electron_lostHits()[iel] > 1)
+//     {
+//         return false;
+//     }
+//     if (fabs(Electron_dxy()[iel]) > 0.05)
+//     {
+//         return false;
+//     }
+//     if (fabs(Electron_dz()[iel]) >= 0.1)
+//     {
+//         return false;
+//     }
+//     if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
+//     {
+//         return false;
+//     }
+//     if (!passesElectronMVA(IDveto, iel))
+//     {
+//         return false;
+//     }
+//     if (!isTriggerSafenoIso_v1(iel))
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
-bool isFakableElectron(int iel)
-{
-    if (!isVetoElectron(iel))
-    {
-        return false;
-    }
-    if (Electron_pt()[iel] < 10)
-    {
-        return false;
-    }
-    if (fabs(Electron_sip3d()[iel]) >= 4)
-    {
-        return false;
-    }
-    if (Electron_tightCharge()[iel] < 2)
-    {
-        return false;
-    }
-    if (!passesElectronMVA(IDfakable, iel))
-    {
-        return false;
-    }
-    return true;
-}
+// bool isFakableElectron(int iel)
+// {
+//     if (!isVetoElectron(iel))
+//     {
+//         return false;
+//     }
+//     if (Electron_pt()[iel] < 10)
+//     {
+//         return false;
+//     }
+//     if (fabs(Electron_sip3d()[iel]) >= 4)
+//     {
+//         return false;
+//     }
+//     if (Electron_tightCharge()[iel] < 2)
+//     {
+//         return false;
+//     }
+//     if (!passesElectronMVA(IDfakable, iel))
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
-bool isGoodElectron(int iel)
-{
-    if (!isFakableElectron(iel))
-    {
-        return false;
-    }
-    if (!passesElectronMVA(IDtight, iel))
-    {
-        return false;
-    }
-    if (!passMultiIso(11, iel, 0.09, 0.85, 9.2))
-    {
-        return false;
-    }
-    return true;
-}
+// bool isGoodElectron(int iel)
+// {
+//     if (!isFakableElectron(iel))
+//     {
+//         return false;
+//     }
+//     if (!passesElectronMVA(IDtight, iel))
+//     {
+//         return false;
+//     }
+//     if (!passMultiIso(11, iel, 0.09, 0.85, 9.2))
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
-bool isVetoMuon(int imu)
-{
-    if (Muon_pt()[imu] < 5)
-    {
-        return false;
-    }
-    if (Muon_miniPFRelIso_all()[imu] > 0.4)
-    {
-        return false;
-    }
-    if (fabs(Muon_dxy()[imu]) > 0.05)
-    {
-        return false;
-    }
-    if (fabs(Muon_dz()[imu]) > 0.1)
-    {
-        return false;
-    }
-    if (fabs(Muon_eta()[imu]) > 2.4)
-    {
-        return false;
-    }
-    // LooseMuonPOG -- only LoosePOG muons can even get stored in nanoaod
-    return true;
-}
+// bool isVetoMuon(int imu)
+// {
+//     if (Muon_pt()[imu] < 5)
+//     {
+//         return false;
+//     }
+//     if (Muon_miniPFRelIso_all()[imu] > 0.4)
+//     {
+//         return false;
+//     }
+//     if (fabs(Muon_dxy()[imu]) > 0.05)
+//     {
+//         return false;
+//     }
+//     if (fabs(Muon_dz()[imu]) > 0.1)
+//     {
+//         return false;
+//     }
+//     if (fabs(Muon_eta()[imu]) > 2.4)
+//     {
+//         return false;
+//     }
+//     // LooseMuonPOG -- only LoosePOG muons can even get stored in nanoaod
+//     return true;
+// }
 
 
-bool isFakableMuon(int imu)
-{
-    if (!isVetoMuon(imu))
-    {
-        return false;
-    }
-    if (Muon_pt()[imu] < 10)
-    {
-        return false;
-    }
-    if (fabs(Muon_sip3d()[imu]) >= 4)
-    {
-        return false;
-    }
-    if (!Muon_tightCharge()[imu])
-    {
-        return false;    // pterr/pt<0.2
-    }
-    if (!Muon_mediumId()[imu])
-    {
-        return false;
-    }
-    return true;
-}
+// bool isFakableMuon(int imu)
+// {
+//     if (!isVetoMuon(imu))
+//     {
+//         return false;
+//     }
+//     if (Muon_pt()[imu] < 10)
+//     {
+//         return false;
+//     }
+//     if (fabs(Muon_sip3d()[imu]) >= 4)
+//     {
+//         return false;
+//     }
+//     if (!Muon_tightCharge()[imu])
+//     {
+//         return false;    // pterr/pt<0.2
+//     }
+//     if (!Muon_mediumId()[imu])
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
-bool isGoodMuon(int imu)
-{
-    if (!isFakableMuon(imu))
-    {
-        return false;
-    }
-    if (!passMultiIso(13, imu, 0.12, 0.80, 7.5))
-    {
-        return false;
-    }
-    return true;
-}
+// bool isGoodMuon(int imu)
+// {
+//     if (!isFakableMuon(imu))
+//     {
+//         return false;
+//     }
+//     if (!passMultiIso(13, imu, 0.12, 0.80, 7.5))
+//     {
+//         return false;
+//     }
+//     return true;
+// }
 
 
 void dumpLeptonProperties(Lepton lep)
@@ -680,18 +717,18 @@ void dumpLeptonProperties(Lepton lep)
 
 bool isLeptonLevel(IDLevel idlevel, int id, int idx)
 {
-    switch (idlevel)
+    if (abs(id) == 11)
     {
-        case (IDveto):
-            return (abs(id) == 11 ? isVetoElectron(idx) : isVetoMuon(idx));
-        case (IDfakable):
-            return (abs(id) == 11 ? isFakableElectron(idx) : isFakableMuon(idx));
-        case (IDtight):
-            return (abs(id) == 11 ? isGoodElectron(idx) : isGoodMuon(idx));
-        default:
-            throw std::runtime_error("Invalid idlevel!");
+        return electronID(idx, idlevel, gconf.year);
     }
-    return false;
+    else if (abs(id) == 13)
+    {
+        return muonID(idx, idlevel, gconf.year);
+    }
+    else 
+    {
+        return false;
+    }
 }
 
 IDLevel whichLeptonLevel(int id, int idx)
@@ -717,5 +754,24 @@ IDLevel whichLeptonLevel(int id, int idx)
     else
     {
         return IDdefault;
+    }
+}
+
+float coneCorrPt(int id, int idx, float multiiso_minireliso, float multiiso_ptratio, float multiiso_ptrel)
+{
+    // Isolation variables
+    float miniiso = abs(id) == 11 ? Electron_miniPFRelIso_all().at(idx) : Muon_miniPFRelIso_all().at(idx);
+    float ptratio = abs(id) == 11 ? 1 / (Electron_jetRelIso().at(idx) + 1) : 1 / (Muon_jetRelIso().at(idx) + 1);
+    float ptrel = abs(id) == 11 ? Electron_jetPtRelv2().at(idx) : Muon_jetPtRelv2().at(idx);
+    // Lepton & jet pt
+    float lep_pt = abs(id) == 11 ? Electron_pt().at(idx) : Muon_pt().at(idx);
+    float jet_pt = lep_pt / ptratio;
+    if (ptrel > multiiso_ptrel)
+    {
+        return lep_pt * (1 + std::max(float(0), miniiso - multiiso_minireliso));
+    }
+    else
+    {
+        return std::max(lep_pt, jet_pt * multiiso_ptratio);
     }
 }

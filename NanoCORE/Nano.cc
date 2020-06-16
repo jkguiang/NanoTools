@@ -1,8 +1,7 @@
 #include "Nano.h"
 Nano nt;
 
-void Nano::Init(TTree *tree, int year) {
-    year_ = year;
+void Nano::Init(TTree *tree) {
     b_CaloMET_phi_ = tree->GetBranch("CaloMET_phi");
     if (b_CaloMET_phi_) { b_CaloMET_phi_->SetAddress(&CaloMET_phi_); }
     b_CaloMET_pt_ = tree->GetBranch("CaloMET_pt");
@@ -2968,7 +2967,7 @@ void Nano::Init(TTree *tree, int year) {
     b_run_ = tree->GetBranch("run");
     if (b_run_) { b_run_->SetAddress(&run_); }
     // Parsing year
-    setYear(tree);
+    // setYear(tree);
 }
 
 void Nano::setYear(TTree* tree) {

@@ -26,6 +26,16 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > LorentzVector
 
 using namespace std;
 
+enum IDLevel
+{
+    IDdefault = -1,
+    IDveto = 0, // for Z-veto
+    IDfakablenoiso = 1,
+    IDfakable = 2, // for fake background + jet cleaning
+    IDtightnoiso = 3,
+    IDtight = 4 // for analysis
+};
+
 class Nano {
 private:
 protected:
@@ -4886,7 +4896,7 @@ protected:
     bool loaded_run_;
     Int_t year_;
 public:
-    void Init(TTree *tree, int year);
+    void Init(TTree *tree);
     void setYear(TTree* tree);
     void PrintUsage();
     void GetEntry(unsigned int idx);
