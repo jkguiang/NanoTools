@@ -52,6 +52,7 @@ MonolepTree::MonolepTree(TFile* new_tfile) {
     b_fake_from_c = ttree->Branch("fake_from_c", &fake_from_c, "fake_from_c/O");
     b_fake_from_light = ttree->Branch("fake_from_light", &fake_from_light, "fake_from_light/O");
     b_n_jets = ttree->Branch("n_jets", &n_jets, "n_jets/I");
+    b_n_gen_bquarks = ttree->Branch("n_gen_bquarks", &n_gen_bquarks, "n_gen_bquarks/I");
     b_n_btags_deepCSV_loose = ttree->Branch("n_btags_deepCSV_loose", &n_btags_deepCSV_loose, "n_btags_deepCSV_loose/I");
     b_n_btags_deepCSV_medium = ttree->Branch("n_btags_deepCSV_medium", &n_btags_deepCSV_medium, "n_btags_deepCSV_medium/I");
     b_n_btags_deepCSV_tight = ttree->Branch("n_btags_deepCSV_tight", &n_btags_deepCSV_tight, "n_btags_deepCSV_tight/I");
@@ -86,6 +87,7 @@ void MonolepTree::resetBranches() {
     fake_from_c = false;
     fake_from_light = false;
     n_jets = 0;
+    n_gen_bquarks = 0;
     n_btags_deepCSV_loose = -999;
     n_btags_deepCSV_medium = -999;
     n_btags_deepCSV_tight = -999;
@@ -137,7 +139,7 @@ int MonolepTree::fillBranches() {
         return 0;
     }
     // Fill appropriate branches only for tight prompts
-    if (prompt_lepton.idlevel() == IDtight) {
+    if (prompt_lepton.idlevel() == IDtight && fake_lepton.idlevel() >= IDfakable) {
         fillLeptonBranches(prompt_lepton, true);
         fillLeptonBranches(fake_lepton, false);
         // Apply FR if fake is loose
@@ -165,6 +167,15 @@ int MonolepTree::fillBranches() {
     event = nt.event();
     met = MET_pt();
     n_jets = nJet();
+
+    // Count gen-level b-quarks
+    n_gen_bquarks = 0;
+    for (unsigned int i = 0; i < nGenPart(); i++) {
+        bool is_last_copy = (GenPart_statusFlags().at(i) & (1<<13)) == (1<<13);
+        if (abs(GenPart_pdgId().at(i)) == 5 && is_last_copy) {
+            n_gen_bquarks++;
+        }
+    }
     
     // DeepAlgo btag counting
     n_btags_deepCSV_loose  = 0;
@@ -327,4 +338,6 @@ pair<float, float> MonolepTree::getFlavFakeRate(Lepton lepton, int fake_gen_matc
     else {
         return {0.0, 0.0};
     }
+
+    return {0.0, 0.0};
 }
