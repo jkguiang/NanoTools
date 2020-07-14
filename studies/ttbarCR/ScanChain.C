@@ -10,7 +10,6 @@
 
 #include "../NanoCORE/Nano.h"
 #include "../NanoCORE/SSSelections.cc"
-#include "../NanoCORE/tqdm.h"
 #include "./control.h"
 
 #include <iostream>
@@ -26,16 +25,12 @@ int ScanChain(TChain *ch, TString out_name, bool isData) {
     ControlTree* control_tree = new ControlTree(control_tfile);
     // Set configuration parameters
     gconf.year = 2016;
-	// Init Hist
-	TH1F* hist = new TH1F("hist", "test", 100, 80., 110.);
-	TCanvas *c = new TCanvas();
     // Initialize looper variables
     int nEventsTotal = 0;
     int nEventsChain = ch->GetEntries();
     TFile *currentFile = 0;
     TObjArray *listOfFiles = ch->GetListOfFiles();
     TIter fileIter(listOfFiles);
-    tqdm bar;
 	float xsec = 831.76;
     // File loop
     while ( (currentFile = (TFile*)fileIter.Next()) ) {
@@ -57,25 +52,18 @@ int ScanChain(TChain *ch, TString out_name, bool isData) {
             tree->LoadTree(event);
             // Update progress
             nEventsTotal++;
-            bar.progress(nEventsTotal, nEventsChain);
             /* Analysis code */
 			//HLTS
 			if(HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL() || HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL() || HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ() || HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ()) {	
 				control_tree->fillBranches(1,xsec,isData);
-				hist->Fill(control_tree->elec_pt);
 			}
         } // END event loop
-		
-		// Draw Hist
-		hist->Draw();
-		c->Print("hist.png");
 
         // Clean up
         delete file;
 
     } // END file loop
     // Wrap up
-    bar.finish();
     control_tree->writeTFile();
     return 0;
 }
