@@ -10,8 +10,8 @@
 #include "TTreeCache.h"
 #include "TString.h"
 // NanoCORE
-#include "../NanoCORE/Nano.h"
-#include "../NanoCORE/SSSelections.h"
+#include "./NanoCORE/Nano.h"
+#include "./NanoCORE/SSSelections.h"
 // Header
 #include "control.h"
 
@@ -56,8 +56,7 @@ void ControlTree::resetBranches() {
 }
 
 int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
-	float mc_weight;
-	float int_lum = 7721;
+	float int_lum = 7721.0;
 	// Get Leptons
 	Leptons leptons = getLeptons();
 	// Iter Over Leptons 
@@ -130,7 +129,7 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 	num_btags_medium = num_tagged_b_medium;
 	num_btags_loose = num_tagged_b_loose;
 	if (!isData) {
-		mc_weight = xsec * int_lum / nEvents;
+		mc_weight = xsec * int_lum / float(nEvents);
 	}
 	fillTTree();	
 	return 0;
