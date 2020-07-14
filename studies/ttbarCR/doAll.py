@@ -4,7 +4,7 @@ import ROOT
 ROOT.SetMemoryPolicy(ROOT.kMemoryStrict)
 import glob
 
-def doAll(input_file, is_data):
+def doAll(input_file, output_file, is_data):
     # Load .so files
     ROOT.gROOT.ProcessLine(".L ./NanoCORE/NANO_CORE.so");
     ROOT.gROOT.ProcessLine(".L ./control.C+");
@@ -14,7 +14,7 @@ def doAll(input_file, is_data):
     tchain = ROOT.TChain("Events")
     tchain.Add(input_file)
     # Run ScanChain
-    ROOT.ScanChain(tchain, "output.root", is_data)
+    ROOT.ScanChain(tchain, output_file, is_data)
 
     return
 
@@ -31,6 +31,13 @@ if __name__ == "__main__":
         default="",
         help="Input file path"
     )
+    # Output file path
+    argparser.add_argument(
+        "--output_file", 
+        type=str, 
+        default="",
+        help="Output file path"
+    )
     # Dilepton
     argparser.add_argument(
         "--is_data", 
@@ -41,4 +48,4 @@ if __name__ == "__main__":
     # Get args
     args = argparser.parse_args()
 
-    doAll(args.input_file, args.is_data)
+    doAll(args.input_file, args.output_file, args.is_data)
