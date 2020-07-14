@@ -83,16 +83,35 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 		return 0;
 	}
 	
+	float loose_working_point = 0.0614;	
+	float medium_working_point = 0.3093;	
 	float tight_working_point = 0.7221;	
+	int num_tagged_b_loose = 0;	
+	int num_tagged_b_medium = 0;	
 	int num_tagged_b_tight = 0;	
 	// Iter Over Jets
 	for (unsigned int i = 0; i < nJet(); i++) {
 		if(fabs(Jet_eta().at(i)) > 2.5) continue;
 		if(Jet_pt().at(i) < 30) continue;
 		if(Jet_jetId().at(i) == Electron_jetIdx().at(elec.idx()) || Jet_jetId().at(i) == Muon_jetIdx().at(mu.idx())) continue;
-		if(Jet_btagDeepFlavB().at(i) > tight_working_point){
+		if(Jet_btagDeepFlavB().at(i) > loose_working_point) {
+			num_tagged_b_loose++;
+		}
+        else {
+            continue;
+        }
+		if(Jet_btagDeepFlavB().at(i) > medium_working_point) {
+			num_tagged_b_medium++;
+		}
+        else {
+            continue;
+        }
+		if(Jet_btagDeepFlavB().at(i) > tight_working_point) {
 			num_tagged_b_tight++;
 		}
+        else {
+            continue;
+        }
 	}
 
  	// Add cut for b tags
@@ -108,8 +127,8 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 	mu_phi = mu.phi();
 	num_jets = nJet();
 	num_btags_tight = num_tagged_b_tight;
-	num_btags_medium;
-	num_btags_loose;
+	num_btags_medium = num_tagged_b_medium;
+	num_btags_loose = num_tagged_b_loose;
 	if (!isData) {
 		mc_weight = xsec * int_lum / nEvents;
 	}
