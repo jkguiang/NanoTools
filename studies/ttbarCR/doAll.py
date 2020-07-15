@@ -42,7 +42,7 @@ if __name__ == "__main__":
     argparser.add_argument(
         "--is_data", 
         action="store_true",
-        default=True,
+        default=False,
         help="Input is not simulation"
     )
     # Get args
