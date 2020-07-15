@@ -65,14 +65,23 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 	Lepton elec;
 	Lepton mu;
 	for (unsigned int i = 0; i < leptons.size(); i++) {		
-		if(leptons[i].is_el() && leptons[i].pt() > 20) {
-			elec = leptons[i];
-			numElec++; 
-		}
-		else if(leptons[i].is_mu() && leptons[i].pt() > 20) {
-			mu = leptons[i];
-			numMu++;
-		}
+        if (leptons[i].pt() < 25) {
+            continue;
+        }
+        if(leptons[i].is_el()) {
+            bool goodElectron = (Electron_cutBased()[i] == 4);
+            if (goodElectron) {
+                elec = leptons[i];
+                numElec++; 
+            }
+        }
+        else if(leptons[i].is_mu()) {
+            bool goodMuon = (Muon_mediumId()[i] == 1 && Muon_pfRelIso04_all()[i] < 0.25);
+            if (goodMuon) {
+                mu = leptons[i];
+                numMu++;
+            }
+        }
 	}
 	if (numElec != 1 || numMu != 1){
 		return 0;
@@ -82,38 +91,35 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 		return 0;
 	}
 	
+    // 2016 legacy wps
 	float loose_working_point = 0.0614;	
 	float medium_working_point = 0.3093;	
 	float tight_working_point = 0.7221;	
+    if (!isData) {
+        // 102X MC wps
+        loose_working_point = 0.0494;	
+        medium_working_point = 0.2770;	
+        tight_working_point = 0.7264;	
+    }
 	int num_tagged_b_loose = 0;	
 	int num_tagged_b_medium = 0;	
 	int num_tagged_b_tight = 0;	
 	// Iter Over Jets
 	for (unsigned int i = 0; i < nJet(); i++) {
-		if(fabs(Jet_eta().at(i)) > 2.5) continue;
+		if(fabs(Jet_eta().at(i)) > 2.4) continue;
 		if(Jet_pt().at(i) < 30) continue;
 		if(Jet_jetId().at(i) == Electron_jetIdx().at(elec.idx()) || Jet_jetId().at(i) == Muon_jetIdx().at(mu.idx())) continue;
-		if(Jet_btagDeepFlavB().at(i) > loose_working_point) {
+		if(Jet_btagDeepFlavB().at(i) >= loose_working_point) {
 			num_tagged_b_loose++;
 		}
-        else {
-            continue;
-        }
-		if(Jet_btagDeepFlavB().at(i) > medium_working_point) {
+		if(Jet_btagDeepFlavB().at(i) >= medium_working_point) {
 			num_tagged_b_medium++;
 		}
-        else {
-            continue;
-        }
-		if(Jet_btagDeepFlavB().at(i) > tight_working_point) {
+		if(Jet_btagDeepFlavB().at(i) >= tight_working_point) {
 			num_tagged_b_tight++;
 		}
-        else {
-            continue;
-        }
 	}
 
- 	// Add cut for b tags
 	// Assign Branch Values:
 	met = MET_pt();
 	elec_id = elec.id();
