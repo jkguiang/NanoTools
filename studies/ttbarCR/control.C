@@ -10,8 +10,8 @@
 #include "TTreeCache.h"
 #include "TString.h"
 // NanoCORE
-#include "../NanoCORE/Nano.h"
-#include "../NanoCORE/SSSelections.h"
+#include "./NanoCORE/Nano.h"
+#include "./NanoCORE/SSSelections.h"
 // Header
 #include "control.h"
 

@@ -8,8 +8,8 @@
 #include "TTreePerfStats.h"
 #include "TCanvas.h"
 
-#include "../NanoCORE/Nano.h"
-#include "../NanoCORE/SSSelections.cc"
+#include "./NanoCORE/Nano.h"
+#include "./NanoCORE/SSSelections.cc"
 #include "./control.h"
 
 #include <iostream>

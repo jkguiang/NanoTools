@@ -6,8 +6,8 @@ import glob
 
 def doAll(input_file, output_file, is_data):
     # Load .so files
-    ROOT.gROOT.ProcessLine(".L ../NanoCORE/NANO_CORE.so");
-    ROOT.gROOT.ProcessLine(".L ../control.C+");
+    ROOT.gROOT.ProcessLine(".L ./NanoCORE/NANO_CORE.so");
+    ROOT.gROOT.ProcessLine(".L ./control.C+");
     ROOT.gROOT.ProcessLine(".L ScanChain.C+");
     # Parse samples
     # Make TChain

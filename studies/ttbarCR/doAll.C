@@ -1,5 +1,5 @@
 {
-  gROOT->ProcessLine(".L ../NanoCORE/NANO_CORE.so");
+  gROOT->ProcessLine(".L ./NanoCORE/NANO_CORE.so");
   gROOT->ProcessLine(".L control.C+");
   gROOT->ProcessLine(".L ScanChain.C+");
 
