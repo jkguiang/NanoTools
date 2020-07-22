@@ -10,8 +10,8 @@
 #include "TTreeCache.h"
 #include "TString.h"
 // NanoCORE
-#include "./NanoCORE/Nano.h"
-#include "./NanoCORE/SSSelections.h"
+#include "../NanoCORE/Nano.h"
+#include "../NanoCORE/SSSelections.h"
 // Header
 #include "control.h"
 
@@ -56,7 +56,7 @@ void ControlTree::resetBranches() {
 }
 
 int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
-	float int_lum = 7721.0;
+	float int_lum = 16357.0;
 	// Get Leptons
 	Leptons leptons = getLeptons();
 	// Iter Over Leptons 
@@ -69,14 +69,14 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
             continue;
         }
         if(leptons[i].is_el()) {
-            bool goodElectron = (Electron_cutBased()[i] == 4);
+            bool goodElectron = (Electron_cutBased()[leptons[i].idx()] == 4);
             if (goodElectron) {
                 elec = leptons[i];
                 numElec++; 
             }
         }
         else if(leptons[i].is_mu()) {
-            bool goodMuon = (Muon_mediumId()[i] == 1 && Muon_pfRelIso04_all()[i] < 0.25);
+            bool goodMuon = (Muon_mediumId()[leptons[i].idx()] == 1 && Muon_pfRelIso04_all()[leptons[i].idx()] < 0.25);
             if (goodMuon) {
                 mu = leptons[i];
                 numMu++;
@@ -119,6 +119,7 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 			num_tagged_b_tight++;
 		}
 	}
+	
 
 	// Assign Branch Values:
 	met = MET_pt();
