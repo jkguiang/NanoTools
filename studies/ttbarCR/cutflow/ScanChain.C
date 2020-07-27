@@ -6,8 +6,8 @@
 #include "TTreeCacheUnzip.h"
 #include "TTreePerfStats.h"
 
-#include "./NanoCORE/Nano.h"
-#include "./NanoCORE/SSSelections.cc"
+#include "../NanoCORE/Nano.h"
+#include "../NanoCORE/SSSelections.cc"
 
 #include <iostream>
 #include <iomanip>
@@ -15,10 +15,11 @@
 using namespace std;
 using namespace tas;
 
-void analysis(int &gen_lept_event, int &gen_elec_event_t, int &gen_mu_event_t, int &gen_one_and_one_t, int &gen_opp_ch_t, int &lept_event, int &elec_event_t, int &mu_event_t, int &one_and_one_t, int &opp_ch_t, int &pass_hlt_t, int &two_btag_t, bool isData){
+void analysis(int &gen_lept_event, int &gen_elec_event_t, int &gen_mu_event_t, int &gen_one_and_one_t, int &gen_opp_ch_t, int &gen_two_b_t, int &lept_event, int &elec_event_t, int &mu_event_t, int &one_and_one_t, int &opp_ch_t, int &pass_hlt_t, int &two_btag_t, bool isData){
 	// Iter over GenParticles
 	int numGenMu = 0;
 	int numGenElec = 0;
+	int numGenb = 0;
 	int gen_el_id = 0;
 	int gen_mu_id = 0;
 	for (unsigned int i = 0; i < nGenPart(); i++) {
@@ -34,12 +35,18 @@ void analysis(int &gen_lept_event, int &gen_elec_event_t, int &gen_mu_event_t, i
 				gen_el_id = i;
 			}	
 		}
+		if(fabs(GenPart_pdgId().at(m_index)) == 6){
+			if(fabs(GenPart_pdgId().at(i)) == 5){
+				numGenb++;
+			}
+		}
 	}
 	// Bools	
 	bool gen_elec_event = false;
 	bool gen_mu_event = false;
 	bool gen_one_and_one = false;
 	bool gen_opp_ch = false;
+	bool gen_two_b = false;
 	// Conditionals
 	if (numGenElec > 0 || numGenMu > 0) {gen_lept_event++;}
 
@@ -49,7 +56,9 @@ void analysis(int &gen_lept_event, int &gen_elec_event_t, int &gen_mu_event_t, i
 
 	if (numGenElec == 1 && numGenMu == 1) {gen_one_and_one = true;}
 
-	if (gen_one_and_one && (GenPart_pdgId().at(gen_mu_id) * GenPart_pdgId().at(gen_el_id) < 0)) {gen_opp_ch = true;}	
+	if (gen_one_and_one && (GenPart_pdgId().at(gen_mu_id) * GenPart_pdgId().at(gen_el_id) < 0)) {gen_opp_ch = true;}
+	
+	if (gen_opp_ch && numGenb == 2) {gen_two_b = true;}	
 	// Iter over Reco Leptons	
 	Leptons leptons = getLeptons();
 	int numElec = 0;
@@ -123,6 +132,7 @@ void analysis(int &gen_lept_event, int &gen_elec_event_t, int &gen_mu_event_t, i
 	if (gen_mu_event) {gen_mu_event_t++;}
 	if (gen_one_and_one) {gen_one_and_one_t++;}
 	if (gen_opp_ch) {gen_opp_ch_t++;}
+	if (gen_two_b) {gen_two_b_t++;}
 	if (elec_event) {elec_event_t++;}
 	if (mu_event) {mu_event_t++;}
 	if (one_and_one) {one_and_one_t++;}
@@ -151,6 +161,7 @@ int ScanChain(TChain *ch, bool isData) {
 	int gen_mu_event_t = 0;
 	int gen_one_and_one_t = 0;
 	int gen_opp_ch_t = 0;
+	int gen_two_b_t = 0;
 	int lept_event = 0;
 	int elec_event_t = 0;
 	int mu_event_t = 0;
@@ -178,7 +189,7 @@ int ScanChain(TChain *ch, bool isData) {
             // Update progress
             nEventsTotal++;
             /* Analysis code */
-			analysis(gen_lept_event, gen_elec_event_t, gen_mu_event_t, gen_one_and_one_t, gen_opp_ch_t, lept_event, elec_event_t, mu_event_t, one_and_one_t, opp_ch_t, pass_hlt_t, two_btag_t, isData);		
+			analysis(gen_lept_event, gen_elec_event_t, gen_mu_event_t, gen_one_and_one_t, gen_opp_ch_t, gen_two_b_t, lept_event, elec_event_t, mu_event_t, one_and_one_t, opp_ch_t, pass_hlt_t, two_btag_t, isData);		
 			} // END event loop
         // Clean up
         delete file;
@@ -190,6 +201,7 @@ int ScanChain(TChain *ch, bool isData) {
 	cout << "Num Gen Mu Events: " << gen_mu_event_t << endl;
 	cout << "Num Gen One Elec && One Mu Events: " << gen_one_and_one_t << endl;
 	cout << "Num Gen Opposite Sign Events: " << gen_opp_ch_t << endl;
+	cout << "Num Gen 2 b Events: " << gen_two_b_t << endl;
 	cout << "Number of Lepton Events: " << lept_event << endl;
 	cout << "Num Elec Events: " << elec_event_t << endl;
 	cout << "Num Mu Events: " << mu_event_t << endl;

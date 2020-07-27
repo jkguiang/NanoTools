@@ -1,5 +1,5 @@
 {
-  gROOT->ProcessLine(".L ./NanoCORE/NANO_CORE.so");
+  gROOT->ProcessLine(".L ../NanoCORE/NANO_CORE.so");
   gROOT->ProcessLine(".L ScanChain.C+");
 
   TChain *tchain1 = new TChain("Events"); 
