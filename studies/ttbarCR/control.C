@@ -14,6 +14,7 @@
 #include "./NanoCORE/SSSelections.h"
 // Header
 #include "control.h"
+#include "scalefactors.C"
 
 using namespace std;
 using namespace tas;
@@ -135,8 +136,14 @@ int ControlTree::fillBranches(int nEvents, float xsec, bool isData){
 	num_btags_tight = num_tagged_b_tight;
 	num_btags_medium = num_tagged_b_medium;
 	num_btags_loose = num_tagged_b_loose;
+	
+	// calc MC weight
+	float xsec_w = xsec * int_lum / float(nEvents);
+	float elecID_w = elecIDScaleFactors(elec_pt, elec_eta);
+	float muID_w = muonMediumIDScaleFactors(mu_pt, mu_eta);
+	float muIso_w = muonLooseIsoMediumIDScaleFactors(mu_pt, mu_eta);
 	if (!isData) {
-		mc_weight = xsec * int_lum / float(nEvents);
+		mc_weight = xsec_w * elecID_w * muID_w * muIso_w;
 	}
 	fillTTree();	
 	return 0;
