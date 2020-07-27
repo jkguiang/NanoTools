@@ -6,8 +6,8 @@
 #include "TTreeCacheUnzip.h"
 #include "TTreePerfStats.h"
 
-#include "../NanoCORE/Nano.h"
-#include "../NanoCORE/SSSelections.cc"
+#include "./NanoCORE/Nano.h"
+#include "./NanoCORE/SSSelections.cc"
 
 #include <iostream>
 #include <iomanip>
