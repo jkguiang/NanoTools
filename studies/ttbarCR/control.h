@@ -1,3 +1,5 @@
+#include "./NanoCORE/Tools/btagsf/BTagCalibrationStandalone.h"
+
 #ifndef CONTROL_H
 #define CONTROL_H
 
@@ -19,11 +21,19 @@ class ControlTree{
 	TBranch* b_num_btags_medium;
 	TBranch* b_num_btags_loose;
 	TBranch* b_mc_weight;
+	TBranch* b_mc_loose_btag_weight;
+	TBranch* b_mc_medium_btag_weight;
+	TBranch* b_mc_tight_btag_weight;
 
 	public:
 		
 		TTree* ttree;
         TFile* tfile;
+
+        BTagCalibration deepjet_csv;
+        BTagCalibrationReader deepjet_loose_reader;
+        BTagCalibrationReader deepjet_medium_reader;
+        BTagCalibrationReader deepjet_tight_reader;
 
 		float met;
 		float elec_id;
@@ -39,12 +49,15 @@ class ControlTree{
 		float num_btags_medium;
 		float num_btags_loose;
 		float mc_weight;		
+		float mc_loose_btag_weight;		
+		float mc_medium_btag_weight;		
+		float mc_tight_btag_weight;		
 		//Constructor
-		ControlTree(TFile* new_tfile);
+		ControlTree(TFile* new_tfile, bool is_data);
 		
 		//Methods
 		void resetBranches();
-		int fillBranches(int nEvents,float xsec, bool isData);
+		int fillBranches(int n_events,float xsec, float int_lumi, bool is_data);
 
 		void fillTTree();
 		void writeTFile();
