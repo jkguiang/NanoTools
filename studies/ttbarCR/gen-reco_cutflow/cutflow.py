@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import os
-#os.system(root doAll.C -q -b > output.txt)
+os.system(root doAll.C -q -b > output.txt)
 
 def main():
 	# Init
@@ -18,6 +18,9 @@ def main():
 	opp_ch = 0
 	pass_hlt = 0
 	two_btag = 0
+	elecID_w = 0
+	muID_w = 0
+	muIso_w = 0
 	
 	# Read Output File
 	f = open("output.txt",'r')	
@@ -50,6 +53,13 @@ def main():
 			pass_hlt += int(line.split(':')[1])
 		elif "Num 2 bTag Events" in line:
 			two_btag += int(line.split(':')[1])
+		elif "Num elecID_w" in line:
+			elecID_w += float(line.split(':')[1])
+		elif "Num muID_w" in line:
+			muID_w += float(line.split(':')[1])
+		elif "Num muIso_w" in line:
+			muIso_w += float(line.split(':')[1])
+		
 	
 	print("Total Number of Events")
 	print(nEventsTotal)
@@ -87,8 +97,18 @@ def main():
 	print(round(float(opp_ch)/float(gen_opp_ch),2))
 	print("Num Passed HLTs Events")
 	print(pass_hlt)
+	print("Efficiency")
+	print(round(float(pass_hlt)/float(gen_opp_ch),2))
 	print("Num 2 bTag Events")
 	print(two_btag)
+	print("Efficiency")
+	print(round(float(two_btag)/float(gen_two_b),2))
+	print("Electron ID W")
+	print(round(elecID_w))
+	print("Muon ID W")
+	print(round(muID_w))
+	print("Muon Iso W")
+	print(round(muIso_w))
 
 if __name__ == "__main__":
 	main()
