@@ -406,3 +406,55 @@ float muonLooseIsoMediumIDScaleFactors(float pt, float eta) {
     if (pt >= 60.000 && eta >= 2.300 && eta < 2.400) return 0.999;
     return 0.0;
 }
+
+float elecRecoScaleFactors(float pt, float eta) {
+    if (pt >= 20.000 && pt < 45.000 && eta >= -2.500 && eta < -2.000) return 1.016;
+    if (pt >= 20.000 && pt < 45.000 && eta >= -2.000 && eta < -1.566) return 0.998;
+    if (pt >= 20.000 && pt < 45.000 && eta >= -1.566 && eta < -1.444) return 0.991;
+    if (pt >= 20.000 && pt < 45.000 && eta >= -1.444 && eta < -1.000) return 0.992;
+    if (pt >= 20.000 && pt < 45.000 && eta >= -1.000 && eta < -0.500) return 0.987;
+    if (pt >= 20.000 && pt < 45.000 && eta >= -0.500 && eta < 0.000) return 0.984;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 0.000 && eta < 0.500) return 0.984;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 0.500 && eta < 1.000) return 0.987;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 1.000 && eta < 1.444) return 0.992;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 1.444 && eta < 1.566) return 0.991;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 1.566 && eta < 2.000) return 0.998;
+    if (pt >= 20.000 && pt < 45.000 && eta >= 2.000 && eta < 2.500) return 1.016;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -2.500 && eta < -2.000) return 1.002;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -2.000 && eta < -1.566) return 0.997;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -1.566 && eta < -1.444) return 0.962;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -1.444 && eta < -1.000) return 0.992;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -1.000 && eta < -0.500) return 0.988;
+    if (pt >= 45.000 && pt < 75.000 && eta >= -0.500 && eta < 0.000) return 0.987;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 0.000 && eta < 0.500) return 0.987;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 0.500 && eta < 1.000) return 0.988;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 1.000 && eta < 1.444) return 0.992;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 1.444 && eta < 1.566) return 0.962;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 1.566 && eta < 2.000) return 0.997;
+    if (pt >= 45.000 && pt < 75.000 && eta >= 2.000 && eta < 2.500) return 1.002;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -2.500 && eta < -2.000) return 1.018;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -2.000 && eta < -1.566) return 1.015;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -1.566 && eta < -1.444) return 1.033;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -1.444 && eta < -1.000) return 1.008;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -1.000 && eta < -0.500) return 1.005;
+    if (pt >= 75.000 && pt < 100.000 && eta >= -0.500 && eta < 0.000) return 0.997;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 0.000 && eta < 0.500) return 0.997;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 0.500 && eta < 1.000) return 1.005;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 1.000 && eta < 1.444) return 1.008;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 1.444 && eta < 1.566) return 1.033;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 1.566 && eta < 2.000) return 1.015;
+    if (pt >= 75.000 && pt < 100.000 && eta >= 2.000 && eta < 2.500) return 1.018;
+    if (pt >= 100.000 && eta >= -2.500 && eta < -2.000) return 0.984;
+    if (pt >= 100.000 && eta >= -2.000 && eta < -1.566) return 1.000;
+    if (pt >= 100.000 && eta >= -1.566 && eta < -1.444) return 1.002;
+    if (pt >= 100.000 && eta >= -1.444 && eta < -1.000) return 0.987;
+    if (pt >= 100.000 && eta >= -1.000 && eta < -0.500) return 0.994;
+    if (pt >= 100.000 && eta >= -0.500 && eta < 0.000) return 0.986;
+    if (pt >= 100.000 && eta >= 0.000 && eta < 0.500) return 0.986;
+    if (pt >= 100.000 && eta >= 0.500 && eta < 1.000) return 0.994;
+    if (pt >= 100.000 && eta >= 1.000 && eta < 1.444) return 0.987;
+    if (pt >= 100.000 && eta >= 1.444 && eta < 1.566) return 1.002;
+    if (pt >= 100.000 && eta >= 1.566 && eta < 2.000) return 1.000;
+    if (pt >= 100.000 && eta >= 2.000 && eta < 2.500) return 0.984;
+    return 0.0;
+}
