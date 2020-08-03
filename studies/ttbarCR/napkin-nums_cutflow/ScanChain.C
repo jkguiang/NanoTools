@@ -67,8 +67,20 @@ void analysis(Events &events, TString sample_name, bool isData) {
             continue;
         }
         int mother_id = GenPart_pdgId().at(mother_idx);
-        // Look for leptons from W+/W-
-        if (abs(mother_id) == 24) {
+        // Look for bquarks from t/tbar
+        if (abs(mother_id) == 6) {
+            if (abs(this_id) == 5 && inFiducialJetRegion(this_pt, this_eta)) {
+                num_gen_fiducial_bquarks++;
+            }
+        }
+        // This gen particle's grandmother
+        int grandmother_idx = GenPart_genPartIdxMother().at(mother_idx);
+        if (grandmother_idx < 0) {
+            continue;
+        }
+        int grandmother_id = GenPart_pdgId().at(grandmother_idx);
+        // Look for leptons from W+/W- from t/tbar
+        if (abs(mother_id) == 24 && abs(grandmother_id) == 6) {
             if (abs(this_id) == 11) {
                 num_gen_els++;
                 gen_el_id = this_id;
@@ -82,12 +94,6 @@ void analysis(Events &events, TString sample_name, bool isData) {
                 if (inFiducialLepRegion(this_pt, this_eta)) {
                     num_gen_fiducial_mus++;
                 }
-            }
-        }
-        // Look for bquarks from t/tbar
-        else if (abs(mother_id) == 6) {
-            if (abs(this_id) == 5 && inFiducialJetRegion(this_pt, this_eta)) {
-                num_gen_fiducial_bquarks++;
             }
         }
     }
