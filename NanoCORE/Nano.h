@@ -270,6 +270,10 @@ protected:
     vector<float> v_Electron_mvaTTH_;
     TBranch *b_Electron_mvaTTH_;
     bool loaded_Electron_mvaTTH_;
+    float Electron_mvaSpring16GP_[30];
+    vector<float> v_Electron_mvaSpring16GP_;
+    TBranch *b_Electron_mvaSpring16GP_;
+    bool loaded_Electron_mvaSpring16GP_;
     vector<LorentzVector> v_Electron_p4_;
     TBranch *b_Electron_p4_;
     bool loaded_Electron_p4_;
@@ -4959,6 +4963,7 @@ public:
     const vector<bool> &Electron_mvaFall17V2noIso_WP90();
     const vector<bool> &Electron_mvaFall17V2noIso_WPL();
     const vector<float> &Electron_mvaTTH();
+    const vector<float> &Electron_mvaSpring16GP();
     const vector<LorentzVector> &Electron_p4();
     const vector<int> &Electron_pdgId();
     const vector<float> &Electron_pfRelIso03_all();
@@ -6465,6 +6470,7 @@ namespace tas {
     const vector<bool> &Electron_mvaFall17V2noIso_WP90(); // MVA noIso ID V2 WP90
     const vector<bool> &Electron_mvaFall17V2noIso_WPL(); // MVA noIso ID V2 loose WP
     const vector<float> &Electron_mvaTTH(); // TTH MVA lepton ID score
+    const vector<float> &Electron_mvaSpring16GP(); // TTH MVA lepton ID score
     const vector<LorentzVector> &Electron_p4(); // from Electron_pt,eta,phi,mass
     const vector<int> &Electron_pdgId(); // PDG code assigned by the event reconstruction (not by MC truth)
     const vector<float> &Electron_pfRelIso03_all(); // PF relative isolation dR=0.3, total (with rho*EA PU corrections)
