@@ -12,25 +12,27 @@
 #include "./NanoCORE/Nano.h"
 #include "./NanoCORE/SSSelections.cc"
 
+#include"./counter.C"
 #include "./ElectronSelectionsNano.C"
+#include "./MuonSelectionsNano.C"
 
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <string>
 
 using namespace std;
 using namespace tas;
 
-int ScanChainNano(TChain *ch, TString sample_name, bool isData) {
+int ScanChainNano(TChain *chain, TString id_level, TString flavor) {
     // Set configuration parameters
     gconf.year = 2016;
     // Initialize looper variables
     int nEventsTotal = 0;
-    int nEventsChain = ch->GetEntries();
+    int nEventsChain = chain->GetEntries();
     TFile *currentFile = 0;
-    TObjArray *listOfFiles = ch->GetListOfFiles();
+    TObjArray *listOfFiles = chain->GetListOfFiles();
     TIter fileIter(listOfFiles);
-	float xsec = 831.76;
     // File loop
     while ( (currentFile = (TFile*)fileIter.Next()) ) {
         // Open file
@@ -43,89 +45,117 @@ int ScanChainNano(TChain *ch, TString sample_name, bool isData) {
         auto psRead = new TTreePerfStats("readPerf", tree);
         nt.Init(tree);
         // Initialize counters
-        int num_gen1el = 0;
-        int num_gen1mu = 0;
-        vector<int> gen1el_reco_geq1el_counts;
-        vector<int> gen1el_reco_geq1mu_counts;
         vector<int> el_counts;
         vector<int> mu_counts;
-        vector<TString> el_cutflow_names;
-        vector<TString> mu_cutflow_names;
+        vector<string> el_cutflow_names;
+        vector<string> mu_cutflow_names;
         // Event loop
-        for(unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
+        cout << "START LEPTON COMPARISON" << endl;
+        // cout << "cut,result,event,lumiblock" << endl;
+        // START DEBUG
+        cout << "cut,result,pt,event,lumiblock" << endl;
+        // END DEBUG
+        for(unsigned int evt = 0; evt < tree->GetEntriesFast(); ++evt) {
             // Load event
-            nt.GetEntry(event);
-            tree->LoadTree(event);
+            nt.GetEntry(evt);
+            tree->LoadTree(evt);
             // Update progress
             nEventsTotal++;
             /* Analysis code */
-            // Generator
-            int num_gen_els = 0;
-            int num_gen_mus = 0;
-            for (unsigned int i = 0; i < nGenPart(); i++) {
-                int this_id = GenPart_pdgId().at(i);
-                int mother_idx = GenPart_genPartIdxMother().at(i);
-                if (mother_idx < 0) {
-                    continue;
-                }
-                int mother_id = GenPart_pdgId().at(mother_idx);
-                if (abs(mother_id) == 24) {
-                    if (abs(this_id) == 11) {
-                        num_gen_els++;
+            if (flavor == "electron") {
+                // Electrons
+                bool no_el_counts = el_counts.empty();
+                for (unsigned int i = 0; i < nElectron(); i++) {
+                    Counter results;
+                    if (id_level == "tight") {
+                        results = isGoodElectronNano(i);
                     }
-                    if (abs(this_id) == 13) {
-                        num_gen_mus++;
+                    else if (id_level == "loose") {
+                        results = isFakableElectronNano(i);
                     }
-                }
-            }
-            if (num_gen_els == 1) {
-                num_gen1el++;
-            }
-            if (num_gen_mus == 1) {
-                num_gen1mu++;
-            }
-            // Electrons
-            vector<int> event_el_counts;
-            for (unsigned int i = 0; i < nElectron(); i++) {
-                Counters results = isGoodElectron(i);
-                vector<int> counts = results.counts;
-                el_cutflow_names = results.names;
-                if (event == 0) {
-                    el_counts = counts;
-                    gen1el_reco_geq1el_counts = vector<int>(counts.size(), 0);
-                }
-                if (i == 0) {
-                    event_el_counts = counts;
-                }
-                else {
-                    if (el_counts.size() != counts.size()) {
+                    else {
+                        cout << "Invalid ID level" << endl;
+                        return 0;
+                    }
+                    vector<int> counts = results.counts;
+                    el_cutflow_names = results.names;
+                    for (unsigned int j = 0; j < counts.size(); j++) {
+                        int count = counts.at(j);
+                        if (no_el_counts) {
+                            el_counts.push_back(count);
+                        }
+                        else {
+                            el_counts[j] += count;
+                        }
+                    }
+                    if (el_counts.size() == counts.size()) {
+                        no_el_counts = false;
+                    }
+                    else {
                         cout << "Something went horribly wrong..." << endl;
                         return 0;
                     }
+                }
+            }
+            if (flavor == "muon") {
+                // Muons
+                bool no_mu_counts = mu_counts.empty();
+                for (unsigned int i = 0; i < nMuon(); i++) {
+                    Counter results;
+                    if (id_level == "tight") {
+                        results = isGoodMuonNano(i);
+                    }
+                    else if (id_level == "loose") {
+                        results = isFakableMuonNano(i);
+                    }
+                    else {
+                        cout << "Invalid ID level" << endl;
+                        return 0;
+                    }
+                    vector<int> counts = results.counts;
+                    mu_cutflow_names = results.names;
                     for (unsigned int j = 0; j < counts.size(); j++) {
-                        el_counts[j] += counts.at(j);
-                        event_el_counts[j] += counts.at(j);
+                        int count = counts.at(j);
+                        if (no_mu_counts) {
+                            mu_counts.push_back(count);
+                        }
+                        else {
+                            mu_counts[j] += count;
+                        }
+                    }
+                    if (mu_counts.size() == counts.size()) {
+                        no_mu_counts = false;
+                    }
+                    else {
+                        cout << "Something went horribly wrong..." << endl;
+                        return 0;
                     }
                 }
             }
-            if (num_gen_els == 1) {
-                for (unsigned int i = 0; i < event_el_counts.size(); i++) {
-                    if (event_el_counts.at(i) >= 1) {
-                        gen1el_reco_geq1el_counts[i]++;
-                    }
-                }
-            }
-            // Muons
-            // for (unsigned int i = 0; i < nMuon(); i++) {
-            // }
         } // END event loop
 
         // Print out
-        for (unsigned int i = 0; i < el_counts.size(); i++) {
-            int num_tight_el = el_counts[i];
-            int num_gen1el_reco_geq1el = gen1el_reco_geq1el_counts[i];
-            cout << el_cutflow_names[i] << ": " << num_tight_el << endl;
-            cout << "--> eff: " << float(num_gen1el_reco_geq1el)/float(num_gen1el) << endl;
+        cout << "START FILE SUMMARY" << endl;
+        cout << "Events parsed: " << nEventsTotal << " events" << endl;
+        if (flavor == "electron") {
+            for (unsigned int i = 0; i < el_counts.size(); i++) {
+                if (i > 0) {
+                    cout << "&& ";
+                }
+                cout << el_cutflow_names.at(i) << ": " << endl;
+                cout << "    --> OBJ LEVEL CUTFLOW <-- " << endl;
+                cout << "    lep passed cut: " << el_counts.at(i) << " reco leptons" << endl;
+            }
+        }
+        if (flavor == "muon") {
+            for (unsigned int i = 0; i < mu_counts.size(); i++) {
+                if (i > 0) {
+                    cout << "&& ";
+                }
+                cout << mu_cutflow_names.at(i) << ": " << endl;
+                cout << "    --> OBJ LEVEL CUTFLOW <-- " << endl;
+                cout << "    lep passed cut: " << mu_counts.at(i) << " reco leptons" << endl;
+            }
         }
 
         // Clean up

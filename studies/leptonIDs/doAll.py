@@ -4,7 +4,7 @@ import ROOT
 ROOT.SetMemoryPolicy(ROOT.kMemoryStrict)
 import glob
 
-def doAll(input_file, sample_name, is_data, cms4=False, nano=False):
+def doAll(input_file, id_level, flavor, cms4=False, nano=False):
     if nano and cms4:
         print("You can't have both! Choose CMS4 OR Nano.")
         return
@@ -16,16 +16,16 @@ def doAll(input_file, sample_name, is_data, cms4=False, nano=False):
         tchain = ROOT.TChain("Events")
         tchain.Add(input_file)
         # Run ScanChain
-        ROOT.ScanChainNano(tchain, sample_name, is_data)
+        ROOT.ScanChainNano(tchain, id_level, flavor)
     elif cms4:
         # Load .so files
-        ROOT.gROOT.ProcessLine(".L ./CORE/CORE.so");
+        ROOT.gROOT.ProcessLine(".L ./CORE/CMS3_CORE.so");
         ROOT.gROOT.ProcessLine(".L ScanChainCMS4.C+");
         # Make TChain
         tchain = ROOT.TChain("Events")
         tchain.Add(input_file)
         # Run ScanChain
-        ROOT.ScanChainCMS4(tchain, sample_name, is_data)
+        ROOT.ScanChainCMS4(tchain, id_level, flavor)
     else:
         print("No looper specified")
 
@@ -44,19 +44,19 @@ if __name__ == "__main__":
         default="",
         help="Input file path"
     )
-    # Sample name
+    # ID level
     argparser.add_argument(
-        "--sample_name", 
+        "--id_level", 
         type=str, 
-        default="",
-        help="Sample name"
+        default="tight",
+        help="ID level (tight, loose)"
     )
-    # Dilepton
+    # ID level
     argparser.add_argument(
-        "--is_data", 
-        action="store_true",
-        default=False,
-        help="Input is not simulation"
+        "--flavor", 
+        type=str, 
+        default="tight",
+        help="Lepton flavor (electron, muon)"
     )
     # CMS4
     argparser.add_argument(
@@ -77,8 +77,8 @@ if __name__ == "__main__":
 
     doAll(
         args.input_file, 
-        args.sample_name, 
-        args.is_data, 
+        args.id_level, 
+        args.flavor, 
         args.cms4, 
         args.nano
     )

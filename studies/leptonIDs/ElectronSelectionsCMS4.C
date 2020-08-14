@@ -1,70 +1,194 @@
-#include "./CORE/CMS4.h"
+#include "./CORE/CMS3.h"
 #include "./CORE/ElectronSelections.h"
+#include "./CORE/IsolationTools.h"
 
 using namespace std;
 using namespace tas;
 
 // 2016
-bool isGoodElectron(unsigned int elidx) {
-    // Preselection
-    if (els_p4().at(elidx).pt() < 10.) return false;
-
-    /* Calls electronID(elidx, SS_medium_v5), which has _many_ nested IDs
-     * which have been flattened below
-     */
-
-    // Args
-    int elIdx = elidx;
-    id_level_t id_level = SS_medium_v6;
-
-    /* --> SS_veto_noiso_v5 (checked by SS_fo_noiso_v5) <-- 
-     *
-     */
-    if (!isTriggerSafenoIso_v1(elIdx)) return false;
-    // if (fabs(els_etaSC().at(elIdx)) > 2.5) return false; Checked in SS_medium_noiso_v5
-    // if (els_conv_vtx_flag().at(elIdx)) return false; Checked in SS_medium_noiso_v5
-    if (els_exp_innerlayers().at(elIdx) > 1) return false;
-    // if (fabs(els_dxyPV().at(elIdx)) >= 0.05) return false; Overruled by SS_fo_noiso_v5
-    // if (fabs(els_dzPV().at(elIdx)) >= 0.1) return false; Checked in SS_medium_noiso_v5
-    if (globalEleMVAreader==0) {
-        cout << "readMVA=0, please create and init it (e.g with createAndInitMVA function)" << endl;
-        return false;
+Counter isGoodElectronCMS4(unsigned int idx) {
+    Counter c;
+    c.newCut("pt > 10");
+    if (els_p4().at(idx).pt() < 10.) {
+        c.fail();
     }
-    if (globalEleMVAreader->passesElectronMVAid(elIdx, SS_veto_noiso_v5) == 0) return false;
+    else {
+        c.pass();
+    }
+    c.newCut("isTriggerSafe_noIso");
+    if (!isTriggerSafenoIso_v1(idx)) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("lostHits == 0");
+    if (els_exp_innerlayers().at(idx) > 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("MVA(2016_veto_noIso_v5)");
+    if (globalEleMVAreader->passesElectronMVAid(idx, SS_veto_noiso_v5) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("dxy < 0.05");
+    if (fabs(els_dxyPV().at(idx)) >= 0.05) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("MVA(2016_fo_noIso_v5)");
+    if (globalEleMVAreader->passesElectronMVAid(idx, SS_fo_noiso_v5) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("etaSC <= 2.5");
+    if (fabs(els_etaSC().at(idx)) > 2.5) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("convVeto == true");
+    if (els_conv_vtx_flag().at(idx)) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("tightCharge != 0 && tightCharge != 1");
+    if (threeChargeAgree(idx) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("|dz| < 0.01");
+    if (fabs(els_dzPV().at(idx)) >= 0.1) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("|sip3d| < 4");
+    if (fabs(els_ip3d().at(idx))/els_ip3derr().at(idx) >= 4) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("MVA(2016_medium_noIso_v5)");
+    if (globalEleMVAreader->passesElectronMVAid(idx, SS_medium_noiso_v5) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("passes iso");
+    if (!passMultiIso(11, idx, gconf.multiiso_el_minireliso, gconf.multiiso_el_ptratio, gconf.multiiso_el_ptrel, gconf.ea_version, 2)) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
 
-    /* --> SS_fo_noiso_v5 (checked by SS_medium_noiso_v5) <-- 
-     *
-     */
-    // if (globalEleMVAreader==0) {
-    //     cout << "readMVA=0, please create and init it (e.g with createAndInitMVA function)" << endl;
-    //     return false;
-    // } Already checked in SS_veto_noiso_v5
-    // if (fabs(els_etaSC().at(elIdx)) > 2.5) return false; Checked in SS_medium_noiso_v5
-    // if (els_conv_vtx_flag().at(elIdx)) return false; Checked in SS_medium_noiso_v5
-    // if (els_exp_innerlayers().at(elIdx) > 0) return false; Checked in SS_medium_noiso_v5
-    // if (threeChargeAgree(elIdx)==0) return false; Checked in SS_medium_noiso_v5
-    if (fabs(els_dxyPV().at(elIdx)) > 0.05) return false;
-    // if (fabs(els_ip3d().at(elIdx))/els_ip3derr().at(elIdx) >= 4) return false; Checked in SS_medium_noiso_v5
-    // if (fabs(els_dzPV().at(elIdx)) >= 0.1) return false; Checked in SS_medium_noiso_v5
-    if (globalEleMVAreader->passesElectronMVAid(elIdx, SS_fo_noiso_v5) == 0) return false; Checked in SS_medium_noiso_v5
+    return c;
+}
 
-    /* --> SS_medium_noiso_v5 (checked by SS_medium_v5) <-- 
-     * 
-     */
-    // if (globalEleMVAreader==0) {
-    //     cout << "readMVA=0, please create and init it (e.g with createAndInitMVA function)" << endl;
-    //     return false;
-    // } Already checked in SS_veto_noiso_v5
-    if (fabs(els_etaSC().at(elIdx)) > 2.5) return false;
-    if (els_conv_vtx_flag().at(elIdx)) return false;
-    // if (els_exp_innerlayers().at(elIdx) > 0) return false; More tightly checked in SS_veto_noiso_v5
-    if (threeChargeAgree(elIdx)==0) return false;
-    if (fabs(els_dzPV().at(elIdx)) >= 0.1) return false;
-    if (fabs(els_ip3d().at(elIdx))/els_ip3derr().at(elIdx) >= 4) return false;
-    if (globalEleMVAreader->passesElectronMVAid(elIdx, SS_medium_noiso_v5) == 0) return false;
-    
-    /* --> SS_medium_v5 <-- 
-     *
-     */
-    return passMultiIso(11, elIdx, gconf.multiiso_el_minireliso, gconf.multiiso_el_ptratio, gconf.multiiso_el_ptrel, gconf.ea_version, 2);
+Counter isFakableElectronCMS4(unsigned int idx) {
+    Counter c;
+    c.newCut("pt > 10");
+    if (els_p4().at(idx).pt() < 10.) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("isTriggerSafe_noIso");
+    if (!isTriggerSafenoIso_v1(idx)) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("MVA(SS_veto_noiso_v5)");
+    if (globalEleMVAreader->passesElectronMVAid(idx, SS_veto_noiso_v5) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("etaSC <= 2.5");
+    if (fabs(els_etaSC().at(idx)) > 2.5) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("convVeto == true");
+    if (els_conv_vtx_flag().at(idx)) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("lostHits == 0");
+    if (els_exp_innerlayers().at(idx) > 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("tightCharge != 0 && tightCharge != 1");
+    if (threeChargeAgree(idx)==0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("dxy < 0.05");
+    if (fabs(els_dxyPV().at(idx)) >= 0.05) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("|sip3d| < 4");
+    if (fabs(els_ip3d().at(idx))/els_ip3derr().at(idx) >= 4) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("dz < 0.1");
+    if (fabs(els_dzPV().at(idx)) >= 0.1) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("MVA(SS_fo_looseMVA_noiso_v5)");
+    if (globalEleMVAreader->passesElectronMVAid(idx, SS_fo_looseMVA_noiso_v5) == 0) {
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+    c.newCut("passes rel iso");
+    if (elMiniRelIsoCMS3_EA(idx, gconf.ea_version) >= 0.40) { 
+        c.fail();
+    }
+    else {
+        c.pass();
+    }
+
+    return c;
 }

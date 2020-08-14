@@ -1,12 +1,51 @@
-echo "running 1"
-python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_0.root --sample_name=TTJets2016 --nano
-# echo "running 2"
-# python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_1.root --sample_name=TTJets2016 > output/counts_1.txt
-# echo "running 3"
-# python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_2.root --sample_name=TTJets2016 > output/counts_2.txt
-# echo "running 4"
-# python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_3.root --sample_name=TTJets2016 > output/counts_3.txt
-# echo "running 5"
-# python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_4.root --sample_name=TTJets2016 > output/counts_4.txt
-# echo "running 6"
-# python doAll.py --input_file=/hadoop/cms/store/user/jguiang/ttbarCR/mc/ttbar/TTJets2016_inclusive_NANOAODSIMv7_5.root --sample_name=TTJets2016 > output/counts_5.txt
+echo "running electron selections"
+echo "running tight over cms4"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_CMS4_0.root \
+    --id_level=tight \
+    --flavor=electron \
+    --cms4 > cms4_tight_elec_cutflow.txt
+echo "running tight over nano"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_NanoAODv7_0.root \
+    --id_level=tight \
+    --flavor=electron \
+    --nano > nano_tight_elec_cutflow.txt
+echo "running loose over cms4"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_CMS4_0.root \
+    --id_level=loose \
+    --flavor=electron \
+    --cms4 > cms4_loose_elec_cutflow.txt
+echo "running loose over nano"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_NanoAODv7_0.root \
+    --id_level=loose \
+    --flavor=electron \
+    --nano > nano_loose_elec_cutflow.txt
+
+echo "running muon selections"
+echo "running tight over cms4"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_CMS4_0.root \
+    --id_level=tight \
+    --flavor=muon \
+    --cms4 > cms4_tight_muon_cutflow.txt
+echo "running tight over nano"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_NanoAODv7_0.root \
+    --id_level=tight \
+    --flavor=muon \
+    --nano > nano_tight_muon_cutflow.txt
+echo "running loose over cms4"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_CMS4_0.root \
+    --id_level=loose \
+    --flavor=muon \
+    --cms4 > cms4_loose_muon_cutflow.txt
+echo "running loose over nano"
+python doAll.py \
+    --input_file=samples/ttbar_semileptonic_NanoAODv7_0.root \
+    --id_level=loose \
+    --flavor=muon \
+    --nano > nano_loose_muon_cutflow.txt
