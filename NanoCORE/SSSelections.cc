@@ -259,14 +259,6 @@ std::pair<int, Hyp> getBestHyp(Leptons& leptons, bool verbose)
                 cout << "   lepton with pT " << lep1.pt() << " passes numer,denom id: " << (lep1.idlevel() == IDtight) << "," << (lep1.idlevel() >= IDfakable) << endl;
                 cout << "   lowMassVeto: " << ((lep2.p4() + lep1.p4()).M() < 8) << endl;
             }
-            if (lep1.is_el() && verbose) {
-                cout << "Lepton with pT " << lep1.pt() << "info dump:" << endl;
-                verboseElectronID(lep1.idx(), IDfakable, lep1.id());
-            }
-            if (lep2.is_el() && verbose) {
-                cout << "Lepton with pT " << lep2.pt() << "info dump:" << endl;
-                verboseElectronID(lep2.idx(), IDfakable, lep2.id());
-            }
             if (lep1.idlevel() < IDfakable || lep2.idlevel() < IDfakable)
             {
                 continue;
