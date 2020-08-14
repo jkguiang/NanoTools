@@ -22,8 +22,7 @@
 using namespace std;
 using namespace tas;
 
-int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data, 
-              float xsec, int n_events_total) {
+int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data) {
     // Output
     TFile* control_tfile = new TFile(out_name, "RECREATE");
     // Custom TTree
@@ -32,15 +31,12 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data,
     float int_lumi; // integrated lumi for ENTIRE dataset
     if (sample_name.Contains("2016")) {
         gconf.year = 2016;
-        int_lumi = 16357.0; // TODO: this is just 2016G+H, change this
     }
     else if (sample_name.Contains("2017")) {
         gconf.year = 2017;
-        int_lumi = 0.; // TODO: add this
     }
     else if (sample_name.Contains("2018")) {
         gconf.year = 2018;
-        int_lumi = 0.; // TODO: add this
     }
     else {
         cout << "ERROR: no year in sample name" << endl;
@@ -79,7 +75,7 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data,
             bool passes_HLTs = checkHLTs(MuonElec_HLTs);
             // TODO: add 2017, 2018 HLTs
 			if (passes_HLTs) {	
-				control_tree->fillBranches(n_events_total, xsec, int_lumi, is_data);
+				control_tree->fillBranches(is_data);
 			}
         } // END event loop
 

@@ -53,7 +53,19 @@ ControlTree::ControlTree(TFile* new_tfile, bool is_data) {
                                            "mc_tight_btag_weight/F");
     if (!is_data) {
         // Calibration objects for b-tagging scale factors
-        string csv_path = "./NanoCORE/Tools/btagsf/csv/DeepJet_2016LegacySF_V1.csv";
+        string csv_path;
+        if (gconf.year == 2016) {
+            csv_path = "./NanoCORE/Tools/btagsf/csv/DeepJet_2016LegacySF_V1.csv";
+        }
+        else if (gconf.year == 2017) {
+            csv_path = "./NanoCORE/Tools/btagsf/csv/DeepJet_94XSF_V4_B_F.csv";
+        }
+        else if (gconf.year == 2018) {
+            csv_path = "./NanoCORE/Tools/btagsf/csv/DeepJet_102XSF_V3.csv";
+        }
+        else {
+            throw std::runtime_error("ControlTree::Branches: Error - invalid year");
+        }
         // CSV object
         deepjet_csv = BTagCalibration("csvv1", csv_path);
         // Loose reader
@@ -89,7 +101,7 @@ void ControlTree::resetBranches() {
 	mc_tight_btag_weight = 1.;
 }
 
-int ControlTree::fillBranches(int n_events, float xsec, float int_lumi, bool is_data) {
+int ControlTree::fillBranches(bool is_data) {
 	// Get Leptons
 	Leptons leptons = getLeptons();
 	// Iter Over Leptons 
@@ -102,20 +114,13 @@ int ControlTree::fillBranches(int n_events, float xsec, float int_lumi, bool is_
         if (lep.pt() < 25) {
             continue;
         }
-        if(lep.is_el()) {
-            bool tightElectronID = (Electron_cutBased()[lep.idx()] == 4);
-            if (tightElectronID) {
-                elec = lep;
-                numElec++; 
-            }
+        if(lep.is_el() && lep.idlevel() == IDtight) {
+            elec = lep;
+            numElec++; 
         }
-        else if(lep.is_mu()) {
-            bool mediumMuonID = (Muon_mediumId()[lep.idx()] == 1);
-            bool looseMuonIso = (Muon_pfRelIso04_all()[lep.idx()] < 0.25);
-            if (mediumMuonID && looseMuonIso) {
-                mu = lep;
-                numMu++;
-            }
+        else if(lep.is_mu() && lep.idlevel() >= IDfakable) {
+            mu = lep;
+            numMu++;
         }
 	}
 	if (numElec != 1 || numMu != 1){
@@ -136,7 +141,18 @@ int ControlTree::fillBranches(int n_events, float xsec, float int_lumi, bool is_
         medium_working_point = 0.3093;	
         tight_working_point = 0.7221;	
     }
+    else if (gconf.year == 2017) {
+        loose_working_point = 0.0521;
+        medium_working_point = 0.3033;
+        tight_working_point = 0.7489;
+    }
+    else if (gconf.year == 2018) {
+        loose_working_point = 0.0494;
+        medium_working_point = 0.2770;
+        tight_working_point = 0.7264;
+    }
     else {
+        throw std::runtime_error("ControlTree::Branches: Error - invalid year");
         return 0;
     }
 	int num_tagged_b_loose = 0;	
@@ -146,7 +162,7 @@ int ControlTree::fillBranches(int n_events, float xsec, float int_lumi, bool is_
     double sf = 1.0; // placeholder for btag sf (MC only)
 	for (unsigned int i = 0; i < nJet(); i++) {
         // Check if jet is in b-tag acceptance region
-		if (fabs(Jet_eta().at(i)) > 2.4) continue;
+		if (fabs(Jet_eta().at(i)) > 2.5) continue;
 		if (Jet_pt().at(i) < 30) continue;
         // Lepton overlap removal
         bool elec_overlap = (i == Electron_jetIdx().at(elec.idx()));
@@ -208,12 +224,11 @@ int ControlTree::fillBranches(int n_events, float xsec, float int_lumi, bool is_
 	
 	// calc MC weight
 	if (!is_data) {
-        float xsec_w = xsec * int_lumi / float(n_events);
         float elecID_w = elecIDScaleFactors(elec_pt, elec_eta);
         float elecReco_w = elecRecoScaleFactors(elec_pt, elec_eta);
         float muID_w = muonMediumIDScaleFactors(mu_pt, mu_eta);
         float muIso_w = muonLooseIsoMediumIDScaleFactors(mu_pt, mu_eta);
-		mc_weight = xsec_w * elecID_w * elecReco_w * muID_w * muIso_w;
+		mc_weight = elecID_w * elecReco_w * muID_w * muIso_w;
 	}
 	fillTTree();	
 	return 0;
