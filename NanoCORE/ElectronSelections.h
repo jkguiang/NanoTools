@@ -2,11 +2,22 @@
 #define ELECTRONSELECTIONS_H
 #include "Nano.h"
 
-bool verboseElectronID(int elIdx, IDLevel idlevel, int year);
-bool electronID(int elIdx, IDLevel idlevel, int year);
-float electronMVACut(float A, float B, float C, float pt);
-bool passesElectronMVA(int iel, string id_name);
-bool isTriggerSafe_noIso_v3(int iel);
-bool passElectronIso(double cut_miniiso, double cut_ptratio, double cut_ptrel, int iel);
+enum electronMVAIDLevel {
+    veto_noIso_2017,
+    fakable_noIso_looseMVA_2017,
+    medium_2017,
+    veto_noIso_2016,
+    fakable_noIso_2016,
+    fakable_noIso_looseMVA_2016,
+    medium_noIso_2016
+};
+
+bool electronID(int idx, IDLevel id_level, int year);
+bool electron2016ID(int idx, IDLevel id_level);
+bool electron2017ID(int idx, IDLevel id_level);
+float electron2016MVACut(float A, float B, float C, float pt);
+float electron2017MVACut(float A, float B, float C, float pt);
+bool passesElectronMVA(int idx, electronMVAIDLevel id_level, int year);
+bool isTriggerSafeNoIso(int idx);
 
 #endif

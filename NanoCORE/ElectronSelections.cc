@@ -3,321 +3,153 @@
 
 using namespace tas;
 
-bool verboseElectronID(int iel, IDLevel idlevel, int year)
+bool electronID(int idx, IDLevel id_level, int year)
 {
-    cout << "Starting verbose electronID printout, brace yourself..." << endl;
-    switch (idlevel)
+    // Common checks
+    if (Electron_pt().at(idx)/Electron_eCorr().at(idx) < 10.)
+    {
+        return false;
+    }
+    if (!isTriggerSafeNoIso(idx))
+    {
+        return false;
+    }
+    if (fabs(Electron_eta().at(idx) + Electron_deltaEtaSC().at(idx)) > 2.5)
+    {
+        return false;
+    }
+    if (!Electron_convVeto().at(idx))
+    {
+        return false;
+    }
+    if (int(Electron_lostHits().at(idx)) > 0)
+    {
+        return false;
+    }
+    if (Electron_tightCharge().at(idx) == 0 || Electron_tightCharge().at(idx) == 1)
+    {
+        return false;
+    }
+    if (fabs(Electron_dxy().at(idx)) >= 0.05) 
+    {
+        return false;
+    }
+    if (fabs(Electron_dz().at(idx)) >= 0.1)
+    {
+        return false;
+    }
+    if (fabs(Electron_sip3d().at(idx)) >= 4)
+    {
+        return false;
+    }
+    // Year-specific checks
+    switch (year)
+    {
+        case (2016):
+            return electron2016ID(idx, id_level);
+            break;
+        case (2017):
+            return electron2017ID(idx, id_level);
+            break;
+        default:
+            throw std::runtime_error("ElectronSelections.cc: ERROR - invalid year");
+            return false;
+            break;
+    }
+}
+
+bool electron2016ID(int idx, IDLevel id_level)
+{
+    // Common checks
+    if (!passesElectronMVA(idx, veto_noIso_2016, 2016))
+    {
+        return false;
+    }
+    // ID-specific checks
+    switch (id_level)
     {
         case (IDveto):
             return true;
             break;
         case (IDfakable):
-            cout << "START: Is fakable?" << endl;
-            cout << "   (Electron_pt()[iel] <= 10) ? " << (Electron_pt()[iel] <= 10) << endl;
-            if (Electron_pt()[iel] <= 10)
+            if (!passesElectronMVA(idx, fakable_noIso_looseMVA_2016, 2016))
             {
                 return false;
             }
-            cout << "   (!isTriggerSafe_noIso_v3(iel)) ? " << (!isTriggerSafe_noIso_v3(iel)) << endl;
-            if (!isTriggerSafe_noIso_v3(iel))
+            if (Electron_miniPFRelIso_all().at(idx) >= 0.4)
+            { 
+                return false;
+            }
+
+            return true;
+            break;
+        case (IDtight):
+            if (!passesElectronMVA(idx, fakable_noIso_2016, 2016))
             {
                 return false;
             }
-            cout << "   (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) ? " <<  (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) << endl;
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
+            if (!passesElectronMVA(idx, medium_noIso_2016, 2016))
             {
                 return false;
             }
-            cout << "   (!Electron_convVeto()[iel]) ? " << (!Electron_convVeto()[iel]) << endl;
-            if (!Electron_convVeto()[iel])
+            if (!passesLeptonIso(idx, 11, 0.12, 0.80, 7.2))
             {
                 return false;
             }
-            cout << "   ((int)(Electron_lostHits()[iel]) > 1) ? " << ((int)(Electron_lostHits()[iel]) > 1) << endl;
-            if ((int)(Electron_lostHits()[iel]) > 1)
+
+            return true;
+            break;
+        default:
+            throw std::runtime_error("ElectronSelections.cc: ERROR - invalid ID level");
+            return false;
+            break;
+    }
+}
+
+bool electron2017ID(int idx, IDLevel id_level)
+{
+    // Common checks
+    if (!passesElectronMVA(idx, veto_noIso_2017, 2017))
+    {
+        return false;
+    }
+    // ID-specific checks
+    switch (id_level)
+    {
+        case (IDveto):
+            return true;
+            break;
+        case (IDfakable):
+            if (!passesElectronMVA(idx, fakable_noIso_looseMVA_2017, 2017))
             {
                 return false;
             }
-            cout << "   (fabs(Electron_dxy()[iel]) > 0.05) ? " << (fabs(Electron_dxy()[iel]) > 0.05) << endl;
-            if (fabs(Electron_dxy()[iel]) > 0.05)
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_dz()[iel]) >= 0.1) ? " << (fabs(Electron_dz()[iel]) >= 0.1) << endl;
-            if (fabs(Electron_dz()[iel]) >= 0.1)
-            {
-                return false;
-            }
-            cout << "   (!passesElectronMVA(iel, \"2017_veto_noiso\")) ? " << (!passesElectronMVA(iel, "2017_veto_noiso")) << endl;
-            if (!passesElectronMVA(iel, "2017_veto_noiso"))
-            {
-                return false;
-            }
-            cout << "   ((int)(Electron_lostHits()[iel]) > 0) ? " << ((int)(Electron_lostHits()[iel]) > 0) << endl;
-            if ((int)(Electron_lostHits()[iel]) > 0)
-            {
-                return false;    //SS_innerlayers
-            }
-            cout << "   (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) ? " << (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) << endl;
-            if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1)
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_sip3d()[iel]) >= 4) ? " << (fabs(Electron_sip3d()[iel]) >= 4) << endl;
-            if (fabs(Electron_sip3d()[iel]) >= 4)
-            {
-                return false;
-            }
-            cout << "   (!passesElectronMVA(iel, \"2017SS_fo_looseMVA_noiso_v6\")) ? " << (!passesElectronMVA(iel, "2017SS_fo_looseMVA_noiso_v6")) << endl;
-            if (!passesElectronMVA(iel, "2017SS_fo_looseMVA_noiso_v6"))
-            {
-                return false;
-            }
-            cout << "   (Electron_miniPFRelIso_all()[iel] >= 0.4) ? " << (Electron_miniPFRelIso_all()[iel] >= 0.4) << endl;
-            if (Electron_miniPFRelIso_all()[iel] >= 0.4)
+            if (Electron_miniPFRelIso_all().at(idx) >= 0.4)
             {
                 return false;
             }
             return true;
             break;
         case (IDtight):
-            cout << "START: Is tight?" << endl;
-            cout << "   (Electron_pt()[iel] <= 10) ? " << (Electron_pt()[iel] <= 10) << endl;
-            if (Electron_pt()[iel] <= 10)
+            if (!passesElectronMVA(idx, medium_2017, 2017))
             {
                 return false;
             }
-            cout << "   !isTriggerSafe_noIso_v3(iel) ? " << (!isTriggerSafe_noIso_v3(iel)) << endl;
-            if (!isTriggerSafe_noIso_v3(iel))
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) ? " << (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5) << endl;
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
-            {
-                return false;
-            }
-            cout << "   (!Electron_convVeto()[iel]) ? " << (!Electron_convVeto()[iel]) << endl;
-            if (!Electron_convVeto()[iel])
-            {
-                return false;
-            }
-            cout << "   ((int)(Electron_lostHits()[iel]) > 1) ? " << ((int)(Electron_lostHits()[iel]) > 1) << endl;
-            if ((int)(Electron_lostHits()[iel]) > 1)
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_dxy()[iel]) > 0.05) ? " << (fabs(Electron_dxy()[iel]) > 0.05) << endl;
-            if (fabs(Electron_dxy()[iel]) > 0.05)
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_dz()[iel]) >= 0.1) ? " << (fabs(Electron_dz()[iel]) >= 0.1) << endl;
-            if (fabs(Electron_dz()[iel]) >= 0.1)
-            {
-                return false;
-            }
-            cout << "   !passesElectronMVA(iel, \"2017_veto_noiso\") ? " << (!passesElectronMVA(iel, "2017_veto_noiso")) << endl;
-            if (!passesElectronMVA(iel, "2017_veto_noiso"))
-            {
-                return false;
-            }
-            cout << "   ((int)(Electron_lostHits()[iel]) > 0) ? " << ((int)(Electron_lostHits()[iel]) > 0) << endl;
-            if ((int)(Electron_lostHits()[iel]) > 0)
-            {
-                return false;    //SS_innerlayers
-            }
-            cout << "   (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) ? " << (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1) << endl;
-            if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1)
-            {
-                return false;
-            }
-            cout << "   (fabs(Electron_sip3d()[iel]) > 4) ? " << (fabs(Electron_sip3d()[iel]) > 4) << endl;
-            if (fabs(Electron_sip3d()[iel]) > 4)
-            {
-                return false;
-            }
-            cout << "   (!passesElectronMVA(iel, \"2017_medium\")) ? " << (!passesElectronMVA(iel, "2017_medium")) << endl;
-            if (!passesElectronMVA(iel, "2017_medium"))
-            {
-                return false;
-            }
-            if (!passElectronIso(0.07, 0.78, 8.0, iel))
+            if (!passesLeptonIso(idx, 11, 0.07, 0.78, 8.0))
             {
                 return false;
             }
             return true;
             break;
         default:
-            cout << "ElectronSelections.cc: Invalid ID" << endl;
+            throw std::runtime_error("ElectronSelections.cc: ERROR - invalid ID level");
             return false;
             break;
     }
     return false;
 }
 
-bool electronID(int iel, IDLevel idlevel, int year)
-{
-    switch (idlevel)
-    {
-        case (IDveto):
-            // if (Electron_pt()[iel] < 7)
-            // {
-            //     return false;
-            // }
-            // if (Electron_miniPFRelIso_all()[iel] > 0.4)
-            // {
-            //     return false;
-            // }
-            // if (Electron_convVeto()[iel] == 0)
-            // {
-            //     return false;
-            // }
-            // if (Electron_lostHits()[iel] > 1)
-            // {
-            //     return false;
-            // }
-            // if (fabs(Electron_dxy()[iel]) > 0.05)
-            // {
-            //     return false;
-            // }
-            // if (fabs(Electron_dz()[iel]) >= 0.1)
-            // {
-            //     return false;
-            // }
-            // if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
-            // {
-            //     return false;
-            // }
-            // if (!passesElectronMVA(iel, "2017_veto_noiso"))
-            // {
-            //     return false;
-            // }
-            // if (!isTriggerSafe_noIso_v3(iel))
-            // {
-            //     return false;
-            // }
-            return true;
-            break;
-        case (IDfakable):
-            if (Electron_pt()[iel] <= 10)
-            {
-                return false;
-            }
-            if (!isTriggerSafe_noIso_v3(iel))
-            {
-                return false;
-            }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
-            {
-                return false;
-            }
-            if (!Electron_convVeto()[iel])
-            {
-                return false;
-            }
-            if ((int)(Electron_lostHits()[iel]) > 1)
-            {
-                return false;
-            }
-            if (fabs(Electron_dxy()[iel]) > 0.05)
-            {
-                return false;
-            }
-            if (fabs(Electron_dz()[iel]) >= 0.1)
-            {
-                return false;
-            }
-            if (!passesElectronMVA(iel, "2017_veto_noiso"))
-            {
-                return false;
-            }
-            if ((int)(Electron_lostHits()[iel]) > 0)
-            {
-                return false;    //SS_innerlayers
-            }
-            if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1)
-            {
-                return false;
-            }
-            if (fabs(Electron_sip3d()[iel]) >= 4)
-            {
-                return false;
-            }
-            if (!passesElectronMVA(iel, "2017SS_fo_looseMVA_noiso_v6"))
-            {
-                return false;
-            }
-            if (Electron_miniPFRelIso_all()[iel] >= 0.4)
-            {
-                return false;
-            }
-            return true;
-            break;
-        case (IDtight):
-            if (Electron_pt()[iel] <= 10)
-            {
-                return false;
-            }
-            if (!isTriggerSafe_noIso_v3(iel))
-            {
-                return false;
-            }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 2.5)
-            {
-                return false;
-            }
-            if (!Electron_convVeto()[iel])
-            {
-                return false;
-            }
-            if ((int)(Electron_lostHits()[iel]) > 1)
-            {
-                return false;
-            }
-            if (fabs(Electron_dxy()[iel]) > 0.05)
-            {
-                return false;
-            }
-            if (fabs(Electron_dz()[iel]) >= 0.1)
-            {
-                return false;
-            }
-            if (!passesElectronMVA(iel, "2017_veto_noiso"))
-            {
-                return false;
-            }
-            if ((int)(Electron_lostHits()[iel]) > 0)
-            {
-                return false;    //SS_innerlayers
-            }
-            if (Electron_tightCharge()[iel] == 0 || Electron_tightCharge()[iel] == 1)
-            {
-                return false;
-            }
-            if (fabs(Electron_sip3d()[iel]) > 4)
-            {
-                return false;
-            }
-            if (!passesElectronMVA(iel, "2017_medium"))
-            {
-                return false;
-            }
-            if (!passElectronIso(0.07, 0.78, 8.0, iel))
-            {
-                return false;
-            }
-            return true;
-            break;
-        default:
-            cout << "ElectronSelections.cc: Invalid ID" << endl;
-            return false;
-            break;
-    }
-    return false;
-}
-
-float electronMVACut(float A, float B, float C, float pt)
+float electron2017MVACut(float A, float B, float C, float pt)
 {
     if (pt < 10)
     {
@@ -329,149 +161,258 @@ float electronMVACut(float A, float B, float C, float pt)
     }
     else
     {
-        return (A + (B - A) / 15 * (pt - 10));
+        return (A + (B-A)/15*(pt-10));
     }
 }
 
-bool passesElectronMVA(int iel, string id_name)
+float electron2016MVACut(float A, float B, float C, float pt) {
+    if (pt > 10)
+    {
+        float pt_min = 15;
+        float pt_max = 25;
+        float D = A + (B-A)/(pt_max-pt_min)*(pt-pt_min);
+        return std::min(A, std::max(B, D));
+    }
+    else 
+    {
+        return C;
+    }
+}
+
+bool passesElectronMVA(int idx, electronMVAIDLevel id_level, int year)
 {
-    int id_level;
-    if (id_name == "2017_medium")
+    // Get MVA discriminant
+    float disc;
+    switch (year)
     {
-        id_level = 1;
+        case (2016):
+            disc = Electron_mvaSpring16GP().at(idx);
+            break;
+        case (2017):
+            disc = Electron_mvaFall17V1noIso().at(idx);
+            break;
+        default:
+            throw std::runtime_error("ElectronSelections.cc: ERROR - invalid year");
+            return false;
+            break;
     }
-    else if (id_name == "2017_veto_noiso")
-    {
-        id_level = 2;
-    }
-    else if (id_name == "2017SS_fo_looseMVA_noiso_v6")
-    {
-        id_level = 3;
-    }
-    else
-    {
-        cout << "wrong input id name from ElectronSelection.C!!!!!" << endl;
-        return 0;
-    }
+    // Calculate absolute value of supercluster eta
+    float SC_absEta = fabs(Electron_eta().at(idx) + Electron_deltaEtaSC().at(idx));
+    // Get "true" pt of the electron
+    float pt = Electron_pt().at(idx)/Electron_eCorr().at(idx);
+    // Get MVA result (binned in |SC_eta|)
     switch (id_level)
     {
-        case (1):
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) < 0.8)
+        case (medium_2017):
+            if (SC_absEta < 0.8)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(0.2, 0.68, 0.2, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(0.2, 0.68, 0.2, pt))
                 {
                     return false;
                 }
             }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) >= 0.8 && fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) <= 1.479)
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(0.1, 0.475, 0.1, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(0.1, 0.475, 0.1, pt))
                 {
                     return false;
                 }
             }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 1.479)
+            if (SC_absEta > 1.479)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.1, 0.32, -0.1, Electron_pt()[iel]))
-                {
-                    return false;
-                }
-            }
-            return true;
-            break;
-        case (2):
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) < 0.8)
-            {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.788, -0.64, 0.488, Electron_pt()[iel]))
-                {
-                    return false;
-                }
-            }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) >= 0.8 && fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) <= 1.479)
-            {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.85, -0.775, -0.045, Electron_pt()[iel]))
-                {
-                    return false;
-                }
-            }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 1.479)
-            {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.81, -0.733, 0.176, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(-0.1, 0.32, -0.1, pt))
                 {
                     return false;
                 }
             }
             return true;
             break;
-        case (3):
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) < 0.8)
+        case (veto_noIso_2017):
+            if (SC_absEta < 0.8)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.93, -0.887, -0.135, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(-0.788, -0.64, 0.488, pt))
                 {
                     return false;
                 }
             }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) >= 0.8 && fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) <= 1.479)
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.93, -0.89, -0.417, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(-0.85, -0.775, -0.045, pt))
                 {
                     return false;
                 }
             }
-            if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 1.479)
+            if (SC_absEta > 1.479)
             {
-                if (Electron_mvaFall17V1noIso()[iel] <= electronMVACut(-0.942, -0.91, -0.470, Electron_pt()[iel]))
+                if (disc <= electron2017MVACut(-0.81, -0.733, 0.176, pt))
                 {
                     return false;
                 }
             }
             return true;
+            break;
+        case (fakable_noIso_looseMVA_2017):
+            if (SC_absEta < 0.8)
+            {
+                if (disc <= electron2017MVACut(-0.93, -0.887, -0.135, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
+            {
+                if (disc <= electron2017MVACut(-0.93, -0.89, -0.417, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta > 1.479)
+            {
+                if (disc <= electron2017MVACut(-0.942, -0.91, -0.470, pt))
+                {
+                    return false;
+                }
+            }
+            return true;
+            break;
+        case (veto_noIso_2016):
+            if (SC_absEta < 0.8) 
+            { 
+                if (disc <= electron2016MVACut(-0.48,-0.85,-0.46, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479) 
+            {
+                if (disc <= electron2016MVACut(-0.67,-0.91,-0.03, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta > 1.479) 
+            {
+                if (disc <= electron2016MVACut(-0.49,-0.83,-0.01, pt))
+                {
+                    return false;
+                }
+            }
+            return true;
+            break;
+        case (fakable_noIso_2016):
+            if (SC_absEta < 0.8)
+            {
+                if (disc <= electron2016MVACut(0.77,0.52,0.77, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
+            {
+                if (disc <= electron2016MVACut(0.56,0.11,0.56, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta > 1.479)
+            {
+                if (disc <= electron2016MVACut(0.48,-0.01,0.48, pt))
+                {
+                    return false;
+                }
+            }
+            return true;
+            break;
+        case (fakable_noIso_looseMVA_2016):
+            if (SC_absEta < 0.8)
+            {
+                if (disc <= electron2016MVACut(-0.86,-0.96,-0.3, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
+            {
+                if (disc <= electron2016MVACut(-0.85,-0.96,-0.36, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta > 1.479)
+            {
+                if (disc <= electron2016MVACut(-0.81,-0.95,-0.63, pt))
+                {
+                    return false;
+                }
+            }
+            return true;
+            break;
+        case (medium_noIso_2016):
+            if (SC_absEta < 0.8)
+            {
+                if (disc <= electron2016MVACut(0.77,0.52,0.77, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta >= 0.8 && SC_absEta <= 1.479)
+            {
+                if (disc <= electron2016MVACut(0.56,0.11,0.56, pt))
+                {
+                    return false;
+                }
+            }
+            if (SC_absEta > 1.479)
+            {
+                if (disc <= electron2016MVACut(0.48,-0.01,0.48, pt))
+                {
+                    return false;
+                }
+            }
+            return true;
+            break;
+        default:
+            throw std::runtime_error("ElectronSelections.cc: ERROR - invalid MVA ID level");
+            return false;
             break;
     }
-    cout << "wrong !!!!!!!should not see this message!!!! from ElectronSelection.C" << endl;
-    return 0;
+
+    return false;
 }
-bool isTriggerSafe_noIso_v3(int iel)
+
+bool isTriggerSafeNoIso(int idx)
 {
-    if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) <= 1.479)
+    // Calculate absolute value of supercluster eta
+    float SC_absEta = fabs(Electron_eta().at(idx) + Electron_deltaEtaSC().at(idx));
+    if (SC_absEta <= 1.479)
     {
-        if (Electron_sieie()[iel] >= 0.011)
+        if (Electron_sieie().at(idx) >= 0.011)
         {
             return false;
         }
-        if (Electron_hoe()[iel] >= 0.08)
+        if (Electron_hoe().at(idx) >= 0.08)
         {
             return false;
         }
-        if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01 )
+        if (fabs(Electron_eInvMinusPInv().at(idx)) >= 0.01 )
         {
             return false;
         }
     }
-    else if (fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) > 1.479 &&
-             fabs(Electron_eta()[iel] + Electron_deltaEtaSC()[iel]) < 2.5)
+    else if (SC_absEta > 1.479 && SC_absEta < 2.5)
     {
-        if (Electron_sieie()[iel] >= 0.031)
+        if (Electron_sieie().at(idx) >= 0.031)
         {
             return false;
         }
-        if (Electron_hoe()[iel] >= 0.08)
+        if (Electron_hoe().at(idx) >= 0.08)
         {
             return false;
         }
-        if (fabs(Electron_eInvMinusPInv()[iel]) >= 0.01 )
+        if (fabs(Electron_eInvMinusPInv().at(idx)) >= 0.01 )
         {
             return false;
         }
     }
     return true;
 }
-bool passElectronIso(double cut_miniiso, double cut_ptratio, double cut_ptrel, int iel)
-{
-    double val_miniiso = Electron_miniPFRelIso_all()[iel];
-    double val_ptratio = 1 / (Electron_jetRelIso()[iel] + 1);
-    double val_ptrel = Electron_jetPtRelv2()[iel];
-    return (val_miniiso < cut_miniiso && ((val_ptratio > cut_ptratio) || (val_ptrel > cut_ptrel)));
-}
-
-

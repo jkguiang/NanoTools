@@ -3,107 +3,110 @@
 
 using namespace tas;
 
-bool muonID(unsigned int imu, IDLevel idlevel, int year)
+bool muonID(unsigned int idx, IDLevel id_level, int year)
 {
-    switch (idlevel)
+    // Common checks
+    if (Muon_pt().at(idx) < 10.)
+    {
+        return false;
+    }
+    if (fabs(Muon_eta().at(idx)) > 2.4)
+    {
+        return false;
+    }
+    if (fabs(Muon_dxy().at(idx)) > 0.05)
+    {
+        return false;
+    }
+    if (fabs(Muon_dz().at(idx)) > 0.1)
+    {
+        return false;
+    }
+    if (fabs(Muon_sip3d().at(idx)) >= 4)
+    {
+        return false;
+    }
+    if (!Muon_looseId().at(idx))
+    {
+        return false;
+    }
+    if (Muon_ptErr().at(idx) / Muon_pt().at(idx) >= 0.2)
+    {
+        return false;
+    }
+    if (!Muon_mediumId().at(idx))
+    {
+        return false;
+    }
+    switch (year)
+    {
+        case (2016):
+            return muon2016ID(idx, id_level);
+            break;
+        case (2017):
+            return muon2017ID(idx, id_level);
+            break;
+        default:
+            throw std::runtime_error("MuonSelections.cc: ERROR - invalid year");
+            return false;
+            break;
+    }
+}
+
+bool muon2016ID(unsigned int idx, IDLevel id_level)
+{
+    // ID-specific checks
+    switch (id_level)
     {
         case (IDveto):
             return true;
             break;
         case (IDfakable):
-            if (Muon_pt()[imu] < 10)
-            {
-                return false;
-            }
-            if (fabs(Muon_eta()[imu]) > 2.4)
-            {
-                return false;
-            }
-            if (fabs(Muon_dxy()[imu]) > 0.05)
-            {
-                return false;
-            }
-            if (fabs(Muon_dz()[imu]) > 0.1)
-            {
-                return false;
-            }
-            if (Muon_sip3d()[imu] >= 4)
-            {
-                return false;
-            }
-            if (!Muon_looseId()[imu])
-            {
-                return false;
-            }
-            if (Muon_ptErr()[imu] / Muon_pt()[imu] >= 0.2)
-            {
-                return false;
-            }
-            if (!Muon_mediumId()[imu])
-            {
-                return false;
-            }
-            if (Muon_miniPFRelIso_all()[imu] > 0.40)
-            {
+            if (Muon_miniPFRelIso_all().at(idx) > 0.4) {
                 return false;
             }
             return true;
             break;
         case (IDtight):
-            if (Muon_pt()[imu] < 10)
-            {
-                return false;
-            }
-            if (fabs(Muon_eta()[imu]) > 2.4)
-            {
-                return false;
-            }
-            if (fabs(Muon_dxy()[imu]) > 0.05)
-            {
-                return false;
-            }
-            if (fabs(Muon_dz()[imu]) > 0.1)
-            {
-                return false;
-            }
-            if (!Muon_looseId()[imu])
-            {
-                return false;
-            }
-            if (Muon_sip3d()[imu] >= 4)
-            {
-                return false;
-            }
-            if (!Muon_looseId()[imu])
-            {
-                return false;
-            }
-            if (Muon_ptErr()[imu] / Muon_pt()[imu] >= 0.2)
-            {
-                return false;
-            }
-            if (!Muon_mediumId()[imu])
-            {
-                return false;
-            }
-            if (!passMuonIso(0.11, 0.74, 6.8, imu))
-            {
+            if (!passesLeptonIso(idx, 13, 0.16, 0.76, 7.2)) {
                 return false;
             }
             return true;
             break;
         default:
-            cout << "MuonSelections.cc: Invalid ID" << endl;
+            throw std::runtime_error("MuonSelections.cc: ERROR - invalid ID level");
             return false;
             break;
     }
     return false;
 }
 
-bool passMuonIso(double cut_miniiso, double cut_ptratio, double cut_ptrel, int imu)
+bool muon2017ID(unsigned int idx, IDLevel id_level)
 {
-    double val_miniiso = Muon_miniPFRelIso_all()[imu];
-    double val_ptratio = 1 / (Muon_jetRelIso()[imu] + 1);
-    double val_ptrel = Muon_jetPtRelv2()[imu];
-    return (val_miniiso < cut_miniiso && ((val_ptratio > cut_ptratio) || (val_ptrel > cut_ptrel)));
+    // ID-specific checks
+    switch (id_level)
+    {
+        case (IDveto):
+            return true;
+            break;
+        case (IDfakable):
+            if (Muon_miniPFRelIso_all().at(idx) > 0.4)
+            {
+                return false;
+            }
+            return true;
+            break;
+        case (IDtight):
+            if (!passesLeptonIso(idx, 13, 0.11, 0.74, 6.8))
+            {
+                return false;
+            }
+            return true;
+            break;
+        default:
+            throw std::runtime_error("MuonSelections.cc: ERROR - invalid ID level");
+            return false;
+            break;
+    }
+    return false;
 }
