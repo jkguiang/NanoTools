@@ -21,6 +21,7 @@ int dumpDocLines(){
         const char* particle = (abs(genParticles[j].pdg_id) == 4124) ? "Lambda_c*" : pdg->GetParticle(genParticles[j].pdg_id)->GetName();
         const char* mother_particle = m_index < 0 ? "-" : (abs(genParticles[m_index].pdg_id) == 4124) ? "Lambda_c*" : pdg->GetParticle(genParticles[m_index].pdg_id)->GetName();
         if (genParticles[j].daughters.size() == 1 && is_bad_copy(genParticles[j])) continue;
+        if (!genParticles[j].is_last) continue;
         cout << setw(4)  << left  <<                    j                        << " "
              << setw(10) << left  <<                    particle                 << " "
              << setw(7)  << right << setprecision(4) << genParticles[j].pt       << "  "
