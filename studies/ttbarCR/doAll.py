@@ -5,7 +5,7 @@ ROOT.SetMemoryPolicy(ROOT.kMemoryStrict)
 import glob
 import json
 
-def doAll(input_file, output_file, sample_name, is_data):
+def doAll(input_file, output_file, sample_name):
     # Load .so files
     ROOT.gROOT.ProcessLine(".L ./NanoCORE/NANO_CORE.so");
     ROOT.gROOT.ProcessLine(".L ./control.C+");
@@ -13,11 +13,6 @@ def doAll(input_file, output_file, sample_name, is_data):
     # Get sample information (only used for MC)
     xsec = 0
     n_events_total = 0
-    with open("sample_info.json", "r") as f_in:
-        sample_info = json.load(f_in)
-        if sample_name in sample_info.keys():
-            xsec = sample_info[sample_name]["xsec"]
-            n_events_total = sample_info[sample_name]["n_events_total"]
     # Make TChain
     tchain = ROOT.TChain("Events")
     tchain.Add(input_file)
@@ -25,10 +20,7 @@ def doAll(input_file, output_file, sample_name, is_data):
     ROOT.ScanChain(
         tchain, 
         output_file, 
-        sample_name, 
-        is_data, 
-        xsec, 
-        n_events_total
+        sample_name
     )
 
     return
@@ -60,14 +52,7 @@ if __name__ == "__main__":
         default="",
         help="Sample name"
     )
-    # Dilepton
-    argparser.add_argument(
-        "--is_data", 
-        action="store_true",
-        default=False,
-        help="Input is not simulation"
-    )
     # Get args
     args = argparser.parse_args()
 
-    doAll(args.input_file, args.output_file, args.sample_name, args.is_data)
+    doAll(args.input_file, args.output_file, args.sample_name)
