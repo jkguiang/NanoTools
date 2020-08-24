@@ -22,26 +22,7 @@
 using namespace std;
 using namespace tas;
 
-int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data) {
-    // Output
-    TFile* control_tfile = new TFile(out_name, "RECREATE");
-    // Custom TTree
-    ControlTree* control_tree = new ControlTree(control_tfile, is_data);
-    // Set configuration parameters
-    float int_lumi; // integrated lumi for ENTIRE dataset
-    if (sample_name.Contains("2016")) {
-        gconf.year = 2016;
-    }
-    else if (sample_name.Contains("2017")) {
-        gconf.year = 2017;
-    }
-    else if (sample_name.Contains("2018")) {
-        gconf.year = 2018;
-    }
-    else {
-        cout << "ERROR: no year in sample name" << endl;
-        return 0;
-    }
+int ScanChain(TChain *ch, TString out_name, TString sample_name) {
     // Initialize looper variables
     int nEventsTotal = 0;
     int nEventsChain = ch->GetEntries();
@@ -60,8 +41,12 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data) {
         tree->SetCacheLearnEntries(100);
         auto psRead = new TTreePerfStats("readPerf", tree);
         nt.Init(tree);
+        // Output
+        TFile* control_tfile = new TFile(out_name, "RECREATE");
+        // Custom TTree
+        ControlTree* control_tree = new ControlTree(control_tfile);
         // Event loop
-        for(unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
+        for (unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
             // Reset tree
             control_tree->resetBranches();
             // Load event
@@ -73,19 +58,18 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name, bool is_data) {
             /* Analysis code */
 			// HLTS
             bool passes_HLTs = checkHLTs(MuonElec_HLTs);
-            // TODO: add 2017, 2018 HLTs
 			if (passes_HLTs) {	
-				control_tree->fillBranches(is_data);
+				control_tree->fillBranches();
 			}
         } // END event loop
 
         // Clean up
         delete file;
+        control_tree->writeTFile();
 
     } // END file loop
 
     // Wrap up
     bar.finish();
-    control_tree->writeTFile();
     return 0;
 }
