@@ -43,7 +43,7 @@ bool checkHLTs(HLTSet HLT_set) {
     }
     // Select set of HLTs based on year using year in global config
     bool passes_HLTs = false;
-    if (gconf.year == 2016) {
+    if (year() == 2016) {
         if (HLT_set == MuonElec_HLTs) {
             passes_HLTs = (HLT_mu23_el12_noDZ 
                            || HLT_mu8_el23_noDZ 
@@ -51,15 +51,18 @@ bool checkHLTs(HLTSet HLT_set) {
                            || HLT_mu8_el23_DZ);
         }
     }
-    else if (gconf.year == 2017) {
+    else if (year() == 2017) {
         if (HLT_set == MuonElec_HLTs) {
             passes_HLTs = (HLT_mu23_el12_DZ || HLT_mu8_el23_DZ);
         }
     }
-    else if (gconf.year == 2018) {
+    else if (year() == 2018) {
         if (HLT_set == MuonElec_HLTs) {
             passes_HLTs = (HLT_mu23_el12_DZ || HLT_mu8_el23_DZ);
         }
+    }
+    else {
+        throw std::runtime_error("HLTs.C::checkHLTs: Error - Invalid year");
     }
     return passes_HLTs;
 }
