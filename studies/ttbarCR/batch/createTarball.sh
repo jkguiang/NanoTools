@@ -6,7 +6,8 @@ fi
 
 tar -hcJf ./inputs/package.tar.xz \
     ../NanoCORE/*.h ../NanoCORE/*.cc \
+    ../NanoCORE/Tools/btagsf/*.h ../NanoCORE/Tools/btagsf/*.h \
+    ../NanoCORE/Tools/btagsf/* \
     ../NanoCORE/NANO_CORE.so \
-    ../ScanChain.C ../control.h ../control.C ../HLTs.C\
-    ../sample_info.json \
+    ../ScanChain.C ../control.h ../control.C ../HLTs.C ../scalefactors.C \
     ../doAll.py \

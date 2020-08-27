@@ -31,6 +31,7 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name) {
     TIter fileIter(listOfFiles);
     tqdm bar; // progress bar
     // File loop
+    cout << "STARTING FILE LOOP" << endl;
     while ( (currentFile = (TFile*)fileIter.Next()) ) {
         // Open file
         TFile *file = TFile::Open(currentFile->GetTitle());
@@ -45,7 +46,11 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name) {
         TFile* control_tfile = new TFile(out_name, "RECREATE");
         // Custom TTree
         ControlTree* control_tree = new ControlTree(control_tfile);
+        // Hists
+        TH1F *n_events = new TH1F("n_events", "n_events", 1, 0, 1);
+        control_tree->trackTH1F(n_events);
         // Event loop
+        cout << "STARTING EVENT LOOP" << endl;
         for (unsigned int event = 0; event < tree->GetEntriesFast(); ++event) {
             // Reset tree
             control_tree->resetBranches();
@@ -61,6 +66,9 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name) {
 			if (passes_HLTs) {	
 				control_tree->fillBranches();
 			}
+            if (!isData()) {
+                n_events->Fill(0.5, genWeight());
+            }
         } // END event loop
 
         // Clean up

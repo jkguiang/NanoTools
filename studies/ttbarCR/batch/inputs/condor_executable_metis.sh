@@ -85,12 +85,12 @@ echo -e "\n--- begin running ---\n" #                           <----- section d
 
 EXTRAARGS="$(getjobad metis_extraargs)"
 INPUTFILENAMES=$(echo $INPUTFILENAMES | sed s/,/" "/g) # comma separated to space separated
-echo Executing doAll.py --input_file=root://cmsxrootd.fnal.gov/${INPUTFILENAMES} --output_file=${OUTPUTNAME}.root
+echo Executing doAll.py
 echo Hi this is Jonathan... ignoring all of these args: ${EXTRAARGS}
 python doAll.py \
     --input_file=root://cmsxrootd.fnal.gov/${INPUTFILENAMES} \
+    --sample_name=${INPUTFILENAMES} \
     --output_file=${OUTPUTNAME}.root \
-    --is_data
 
 RET=$?
 
