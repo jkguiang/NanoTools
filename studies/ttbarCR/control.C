@@ -43,6 +43,36 @@ ControlTree::ControlTree(TFile* new_tfile) {
 	b_trailing_lep_phi = ttree->Branch("trailing_lep_phi", &trailing_lep_phi, "trailing_lep_phi/F");
 	b_dilep_mass = ttree->Branch("dilep_mass", &dilep_mass, "dilep_mass/F");
     // Jets
+    TBranch* b_leading_vbs_jet_mc_origin = ttree->Branch("leading_vbs_jet_mc_origin", 
+                                                         &leading_vbs_jet_mc_origin, 
+                                                         "leading_vbs_jet_mc_origin/I");
+    TBranch* b_leading_vbs_jet_P = ttree->Branch("leading_vbs_jet_P", 
+                                                 &leading_vbs_jet_P, 
+                                                 "leading_vbs_jet_P/F");
+    TBranch* b_leading_vbs_jet_pt = ttree->Branch("leading_vbs_jet_pt", 
+                                                  &leading_vbs_jet_pt, 
+                                                  "leading_vbs_jet_pt/F");
+    TBranch* b_leading_vbs_jet_eta = ttree->Branch("leading_vbs_jet_eta", 
+                                                   &leading_vbs_jet_eta, 
+                                                   "leading_vbs_jet_eta/F");
+    TBranch* b_leading_vbs_jet_phi = ttree->Branch("leading_vbs_jet_phi", 
+                                                   &leading_vbs_jet_phi, 
+                                                   "leading_vbs_jet_phi/F");
+    TBranch* b_trailing_vbs_jet_mc_origin = ttree->Branch("trailing_vbs_jet_mc_origin", 
+                                                          &trailing_vbs_jet_mc_origin, 
+                                                          "trailing_vbs_jet_mc_origin/I");
+    TBranch* b_trailing_vbs_jet_P = ttree->Branch("trailing_vbs_jet_P", 
+                                                  &trailing_vbs_jet_P, 
+                                                  "trailing_vbs_jet_P/F");
+    TBranch* b_trailing_vbs_jet_pt = ttree->Branch("trailing_vbs_jet_pt", 
+                                                   &trailing_vbs_jet_pt, 
+                                                   "trailing_vbs_jet_pt/F");
+    TBranch* b_trailing_vbs_jet_eta = ttree->Branch("trailing_vbs_jet_eta", 
+                                                    &trailing_vbs_jet_eta, 
+                                                    "trailing_vbs_jet_eta/F");
+    TBranch* b_trailing_vbs_jet_phi = ttree->Branch("trailing_vbs_jet_phi", 
+                                                   &trailing_vbs_jet_phi, 
+                                                   "trailing_vbs_jet_phi/F");
 	b_vbs_dijet_mass = ttree->Branch("vbs_dijet_mass", &vbs_dijet_mass, "vbs_dijet_mass/F");
 	b_jet_is_vbs = ttree->Branch("jet_is_vbs", &jet_is_vbs);
 	b_jet_pt = ttree->Branch("jet_pt", &jet_pt);
@@ -60,10 +90,8 @@ ControlTree::ControlTree(TFile* new_tfile) {
 	b_jet_ch_pv1_Efrac = ttree->Branch("jet_ch_pv1_Efrac", &jet_ch_pv1_Efrac);
 	b_jet_ch_pv2_Efrac = ttree->Branch("jet_ch_pv2_Efrac", &jet_ch_pv2_Efrac);
 	b_jet_ch_pv3_Efrac = ttree->Branch("jet_ch_pv3_Efrac", &jet_ch_pv3_Efrac);
-	b_num_jets = ttree->Branch("num_jets", &num_jets, "num_jets/F");
-	b_num_btags_tight = ttree->Branch("num_btags_tight", &num_btags_tight, "num_btags_tight/F");
-    b_num_btags_medium = ttree->Branch("num_btags_medium", &num_btags_medium, "num_btags_medium/F");
-    b_num_btags_loose = ttree->Branch("num_btags_loose", &num_btags_loose, "num_btags_loose/F");
+	b_num_jets = ttree->Branch("num_jets", &num_jets, "num_jets/I");
+	b_num_btags_tight = ttree->Branch("num_btags_tight", &num_btags_tight, "num_btags_tight/I");
     // Weights
 	b_gen_weight = ttree->Branch("gen_weight", &gen_weight, "gen_weight/F");
 	b_mc_weight = ttree->Branch("mc_weight", &mc_weight, "mc_weight/F");
@@ -121,6 +149,16 @@ void ControlTree::resetBranches() {
 	trailing_lep_phi = -999;
     dilep_mass = -999;
     // Jets
+    leading_vbs_jet_mc_origin = -999;
+    leading_vbs_jet_P = -999;
+    leading_vbs_jet_pt = -999;
+    leading_vbs_jet_eta = -999;
+    leading_vbs_jet_phi = -999;
+    trailing_vbs_jet_mc_origin = -999;
+    trailing_vbs_jet_P = -999;
+    trailing_vbs_jet_pt = -999;
+    trailing_vbs_jet_eta = -999;
+    trailing_vbs_jet_phi = -999;
     vbs_dijet_mass = -999;
     jet_is_vbs.clear();
     jet_pt.clear();
@@ -138,6 +176,8 @@ void ControlTree::resetBranches() {
     jet_ch_pv1_Efrac.clear();
     jet_ch_pv2_Efrac.clear();
     jet_ch_pv3_Efrac.clear();
+    num_jets = 0;
+    num_btags_tight = 0;
     // Weights
 	gen_weight = 1.;
 	mc_weight = 1.;
@@ -228,17 +268,19 @@ void ControlTree::fillBranches() {
 	int num_tagged_b_tight = 0;	
 	// Iter Over Jets
     double sf = 1.0; // placeholder for btag sf (MC only)
-    vector<int> good_jets;
+    vector<unsigned int> good_jets;
     vector<VBSJetCand> vbs_jet_cands;
 	for (unsigned int i = 0; i < nJet(); i++) {
-        // Check jet ID
-        if (!(Jet_jetId().at(i) & (1 << 1))) { continue; }
+        // Require tight jet ID
+        if (!(Jet_jetId().at(i) & (1 << 2))) { continue; }
         // Check other jet properties
         bool vbs_jet_candidate = true;
         bool taggable = true;
         bool countable = true;
-		if (fabs(Jet_eta().at(i)) > 2.5) { taggable = false; }
-		if (Jet_pt().at(i) < 30) {
+		if (fabs(Jet_eta().at(i)) >= 2.4) { 
+            taggable = false; 
+        }
+		if (Jet_pt().at(i) <= 30) {
             taggable = false;
             vbs_jet_candidate = false;
             countable = false;
@@ -291,9 +333,16 @@ void ControlTree::fillBranches() {
             }
         }
         // END: b-tagging procedure
-        if (vbs_jet_candidate) { vbs_jet_cands.push_back(VBSJetCand(i)); }
-        if (countable) { good_jets.push_back(i); }
+        if (countable) { 
+            if (vbs_jet_candidate) { vbs_jet_cands.push_back(VBSJetCand(i)); }
+            good_jets.push_back(i); 
+        }
 	}
+
+    // Veto events with < 2 btags
+    if (num_tagged_b_tight < 2) {
+        return;
+    }
 
     // VBS candidate search procedure
     VBSJetCand leading_jet;
@@ -386,9 +435,9 @@ void ControlTree::fillBranches() {
     }
 
     // Event
-    num_pvs = PV_npvs();
+    num_pvs = PV_npvsGood();
 	met = MET_pt();
-    ht = 0.; // Gets set in loop over good jets
+    ht = 0.; // Set in loop over good jets below
     // Leptons
 	leading_lep_id = leading_lep.id();
 	leading_lep_pt = leading_lep.pt();
@@ -400,6 +449,17 @@ void ControlTree::fillBranches() {
 	trailing_lep_phi = trailing_lep.phi();
     dilep_mass = (leading_lep.p4()+trailing_lep.p4()).M();
     // Jets
+    leading_vbs_jet_mc_origin = leading_jet.mc_origin();
+    leading_vbs_jet_P = leading_jet.p4().P();
+    leading_vbs_jet_pt = leading_jet.pt();
+    leading_vbs_jet_eta = leading_jet.eta();
+    leading_vbs_jet_phi = leading_jet.phi();
+    trailing_vbs_jet_mc_origin = trailing_jet.mc_origin();
+    trailing_vbs_jet_P = trailing_jet.p4().P();
+    trailing_vbs_jet_pt = trailing_jet.pt();
+    trailing_vbs_jet_eta = trailing_jet.eta();
+    trailing_vbs_jet_phi = trailing_jet.phi();
+    vbs_dijet_mass = (leading_jet.p4()+trailing_jet.p4()).M();
     for (unsigned int i = 0; i < good_jets.size(); i++) {
         int jet_idx = good_jets.at(i);
         ht += Jet_pt().at(jet_idx);
@@ -408,6 +468,7 @@ void ControlTree::fillBranches() {
         jet_eta.push_back(Jet_eta().at(jet_idx));
         jet_phi.push_back(Jet_phi().at(jet_idx));
         if (!isData()) { jet_mc_origin.push_back(Jet_partonFlavour().at(jet_idx)); }
+        else { jet_mc_origin.push_back(-999); }
         jet_pu_id.push_back(Jet_puId().at(jet_idx));
         jet_pu_id_disc.push_back(Jet_puIdDisc().at(jet_idx));
         jet_n_em_Efrac.push_back(Jet_neEmEF().at(jet_idx));
@@ -420,11 +481,8 @@ void ControlTree::fillBranches() {
         jet_ch_pv2_Efrac.push_back(Jet_chFPV2EF().at(jet_idx));
         jet_ch_pv3_Efrac.push_back(Jet_chFPV3EF().at(jet_idx));
     }
-    vbs_dijet_mass = (leading_jet.p4()+trailing_jet.p4()).M();
 	num_jets = good_jets.size();
-	num_btags_tight = num_tagged_b_tight;
-	num_btags_medium = num_tagged_b_medium;
-	num_btags_loose = num_tagged_b_loose;
+    num_btags_tight = num_tagged_b_tight;
 	// Weights
 	if (!isData()) {
         gen_weight = genWeight();
