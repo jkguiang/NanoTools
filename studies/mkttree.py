@@ -228,7 +228,7 @@ def mkttree(input_name, config_file, cleanup=False):
 
 if __name__ == "__main__":
     # CLI
-    argparser = ArgumentParser(description='Plot cartwheel data.',
+    argparser = ArgumentParser(description='Make TTree boilerplate for a babymaker',
                                formatter_class=RawTextHelpFormatter)
     # TTree name
     argparser.add_argument('name', type=str, default=None,
