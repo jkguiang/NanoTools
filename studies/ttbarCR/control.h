@@ -55,6 +55,14 @@ class ControlTree {
 	TBranch* b_trailing_lep_phi;
 	TBranch* b_dilep_mass;
     // Jets
+    TBranch* b_leading_vbs_jet_mc_origin;
+    TBranch* b_leading_vbs_jet_pt;
+    TBranch* b_leading_vbs_jet_eta;
+    TBranch* b_leading_vbs_jet_phi;
+    TBranch* b_trailing_vbs_jet_mc_origin;
+    TBranch* b_trailing_vbs_jet_pt;
+    TBranch* b_trailing_vbs_jet_eta;
+    TBranch* b_trailing_vbs_jet_phi;
     TBranch* b_vbs_dijet_mass;
     TBranch* b_jet_is_vbs;
     TBranch* b_jet_pt;
@@ -74,8 +82,6 @@ class ControlTree {
     TBranch* b_jet_ch_pv3_Efrac;
     TBranch* b_num_jets;
     TBranch* b_num_btags_tight;
-    TBranch* b_num_btags_medium;
-    TBranch* b_num_btags_loose;
     // Weights
 	TBranch* b_gen_weight;
 	TBranch* b_mc_weight;
@@ -108,6 +114,16 @@ class ControlTree {
 		float trailing_lep_phi;
 		float dilep_mass;
         // Jets
+		int leading_vbs_jet_mc_origin;
+		float leading_vbs_jet_P;
+		float leading_vbs_jet_pt;
+		float leading_vbs_jet_eta;
+		float leading_vbs_jet_phi;
+		int trailing_vbs_jet_mc_origin;
+		float trailing_vbs_jet_P;
+		float trailing_vbs_jet_pt;
+		float trailing_vbs_jet_eta;
+		float trailing_vbs_jet_phi;
         float vbs_dijet_mass;
         vector<bool> jet_is_vbs;
         vector<float> jet_pt;
@@ -125,10 +141,8 @@ class ControlTree {
         vector<float> jet_ch_pv1_Efrac;
         vector<float> jet_ch_pv2_Efrac;
         vector<float> jet_ch_pv3_Efrac;
-		float num_jets;
-		float num_btags_tight;
-		float num_btags_medium;
-		float num_btags_loose;
+		int num_jets;
+		int num_btags_tight;
         // Weights
 		float gen_weight;
 		float mc_weight;		
