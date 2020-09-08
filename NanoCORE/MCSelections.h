@@ -37,6 +37,7 @@ class GenPart {
       int idx;
       int pdg_id;
       bool is_last;
+      bool is_fromHard;
       vector<int> daughters;
       int mother_idx;
       int status;
@@ -51,6 +52,7 @@ GenPart::GenPart(int idx) {
     idx = idx;
     pdg_id = GenPart_pdgId().at(idx);
     is_last = (GenPart_statusFlags().at(idx) & (1<<13)) == (1<<13);
+    is_fromHard = (GenPart_statusFlags().at(idx) & (1<<8)) == (1<<8);
     daughters = GenPart_daughters(idx);
     mother_idx = GenPart_genPartIdxMother().at(idx);
     status = GenPart_status().at(idx);
