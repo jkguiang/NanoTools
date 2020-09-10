@@ -47,8 +47,8 @@ bool isFromSUSY(int id, int idx) {
 
     // For Leptons
     if ((abs(mc_id) == 11 || abs(mc_id) == 13)) {
-        if (abs(mc_motherid) == 1000024) return true;
-        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 1000024) return true;
+        if (abs(mc_motherid) == 1000024) {return true;}
+        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 1000024) {return true;}
         return false;
     }
     return false;
@@ -66,14 +66,14 @@ bool isFromW(int id, int idx) {
 
     // For Leptons
     if ((abs(mc_id) == 11 || abs(mc_id) == 13)) {
-        if (abs(mc_motherid) == 24) return true;
-        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 24) return true;
+        if (abs(mc_motherid) == 24) {return true;}
+        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 24) {return true;}
         return false;
     }
     // For Photons
     if (abs(mc_id) == 22) {
-        if (abs(mc_motherid) != abs(id)) return false;
-        if (abs(mc_motherid) != 24) return false;
+        if (abs(mc_motherid) != abs(id)) {return false;}
+        if (abs(mc_motherid) != 24) {return false;}
         return true;
     }
     // everything else
@@ -92,15 +92,15 @@ bool isFromZ(int id, int idx) {
 
     // For Leptons
     if ((abs(mc_id) == 11 || abs(mc_id) == 13)) {
-        if (abs(mc_motherid) == 23) return true;
-        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 23) return true;
+        if (abs(mc_motherid) == 23) {return true;}
+        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 23) {return true;}
         return false;
     }
 
     // For Photons
     if (abs(mc_id) == 22) {
-        if (abs(mc_motherid) != abs(id)) return false;
-        if (abs(mc_motherid) != 23) return false;
+        if (abs(mc_motherid) != abs(id)) {return false;}
+        if (abs(mc_motherid) != 23) {return false;}
         return true;
     }
 
@@ -120,8 +120,8 @@ bool isFromTau(int id, int idx) {
 
     // For Leptons
     if ((abs(mc_id) == 11 || abs(mc_id) == 13)) {
-        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 24) return true;
-        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 23) return true;
+        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 24) {return true;}
+        if (abs(mc_motherid) == 15 && abs(mc_grandmaid) == 23) {return true;}
         return false;
     }
 
@@ -156,9 +156,9 @@ bool isFromLight(int id, int idx) {
         mc_id = genParticles[idx].pdg_id;
         mc_motherid = genParticles[genParticles[idx].mother_idx].pdg_id;
     }
-    if (abs(mc_id) != 11 && abs(mc_id) != 13) return false;
-    if (abs(mc_motherid) > 200 && abs(mc_motherid) < 400) return true;
-    if (abs(mc_motherid) > 0 && abs(mc_motherid) < 4) return true;
+    if (abs(mc_id) != 11 && abs(mc_id) != 13) {return false;}
+    if (abs(mc_motherid) > 200 && abs(mc_motherid) < 400) {return true;}
+    if (abs(mc_motherid) > 0 && abs(mc_motherid) < 4) {return true;}
     return false;
 }
 
@@ -170,167 +170,167 @@ bool isFromLightFake(int id, int idx) {
         mc_motherid = genParticles[genParticles[idx].mother_idx].pdg_id;
     }
     // True if light hadron
-    if (abs(mc_id) > 200 && abs(mc_id) < 400) return true;
+    if (abs(mc_id) > 200 && abs(mc_id) < 400) {return true;}
 
     // True if non-quark whose mother is light hadron
-    if (abs(mc_id) == 11) return false;
-    if (abs(mc_id) == 13) return false;
-    if (abs(mc_motherid) > 200 && abs(mc_motherid) < 400) return true;
-    if (abs(mc_motherid) > 0 && abs(mc_motherid) < 4) return true;
+    if (abs(mc_id) == 11) {return false;}
+    if (abs(mc_id) == 13) {return false;}
+    if (abs(mc_motherid) > 200 && abs(mc_motherid) < 400) {return true;}
+    if (abs(mc_motherid) > 0 && abs(mc_motherid) < 4) {return true;}
 
     return false;
 }
 
 bool idIsCharm(int id) {
     id = abs(id);
-    if (id == 4) return true;
-    if (id == 411) return true;
-    if (id == 421) return true;
-    if (id == 10411) return true;
-    if (id == 10421) return true;
-    if (id == 413) return true;
-    if (id == 423) return true;
-    if (id == 10413) return true;
-    if (id == 10423) return true;
-    if (id == 20413) return true;
-    if (id == 20423) return true;
-    if (id == 415) return true;
-    if (id == 425) return true;
-    if (id == 431) return true;
-    if (id == 10431) return true;
-    if (id == 433) return true;
-    if (id == 10433) return true;
-    if (id == 20433) return true;
-    if (id == 435) return true;
-    if (id == 441) return true;
-    if (id == 10441) return true;
-    if (id == 100441) return true;
-    if (id == 443) return true;
-    if (id == 10443) return true;
-    if (id == 20443) return true;
-    if (id == 100443) return true;
-    if (id == 30443) return true;
-    if (id == 9000443) return true;
-    if (id == 9010443) return true;
-    if (id == 9020443) return true;
-    if (id == 445) return true;
-    if (id == 9000445) return true;
-    if (id == 4122) return true;
-    if (id == 4222) return true;
-    if (id == 4212) return true;
-    if (id == 4112) return true;
-    if (id == 4224) return true;
-    if (id == 4214) return true;
-    if (id == 4114) return true;
-    if (id == 4232) return true;
-    if (id == 4132) return true;
-    if (id == 4322) return true;
-    if (id == 4312) return true;
-    if (id == 4324) return true;
-    if (id == 4314) return true;
-    if (id == 4332) return true;
-    if (id == 4334) return true;
-    if (id == 4412) return true;
-    if (id == 4422) return true;
-    if (id == 4414) return true;
-    if (id == 4424) return true;
-    if (id == 4432) return true;
-    if (id == 4434) return true;
-    if (id == 4444) return true;
+    if (id == 4) {return true;}
+    if (id == 411) {return true;}
+    if (id == 421) {return true;}
+    if (id == 10411) {return true;}
+    if (id == 10421) {return true;}
+    if (id == 413) {return true;}
+    if (id == 423) {return true;}
+    if (id == 10413) {return true;}
+    if (id == 10423) {return true;}
+    if (id == 20413) {return true;}
+    if (id == 20423) {return true;}
+    if (id == 415) {return true;}
+    if (id == 425) {return true;}
+    if (id == 431) {return true;}
+    if (id == 10431) {return true;}
+    if (id == 433) {return true;}
+    if (id == 10433) {return true;}
+    if (id == 20433) {return true;}
+    if (id == 435) {return true;}
+    if (id == 441) {return true;}
+    if (id == 10441) {return true;}
+    if (id == 100441) {return true;}
+    if (id == 443) {return true;}
+    if (id == 10443) {return true;}
+    if (id == 20443) {return true;}
+    if (id == 100443) {return true;}
+    if (id == 30443) {return true;}
+    if (id == 9000443) {return true;}
+    if (id == 9010443) {return true;}
+    if (id == 9020443) {return true;}
+    if (id == 445) {return true;}
+    if (id == 9000445) {return true;}
+    if (id == 4122) {return true;}
+    if (id == 4222) {return true;}
+    if (id == 4212) {return true;}
+    if (id == 4112) {return true;}
+    if (id == 4224) {return true;}
+    if (id == 4214) {return true;}
+    if (id == 4114) {return true;}
+    if (id == 4232) {return true;}
+    if (id == 4132) {return true;}
+    if (id == 4322) {return true;}
+    if (id == 4312) {return true;}
+    if (id == 4324) {return true;}
+    if (id == 4314) {return true;}
+    if (id == 4332) {return true;}
+    if (id == 4334) {return true;}
+    if (id == 4412) {return true;}
+    if (id == 4422) {return true;}
+    if (id == 4414) {return true;}
+    if (id == 4424) {return true;}
+    if (id == 4432) {return true;}
+    if (id == 4434) {return true;}
+    if (id == 4444) {return true;}
     return false;
 }
 
 bool idIsBeauty(int id) {
     id = abs(id);
-    if (id == 5) return true;
-    if (id == 511) return true;
-    if (id == 521) return true;
-    if (id == 10511) return true;
-    if (id == 10521) return true;
-    if (id == 513) return true;
-    if (id == 523) return true;
-    if (id == 10513) return true;
-    if (id == 10523) return true;
-    if (id == 20513) return true;
-    if (id == 20523) return true;
-    if (id == 515) return true;
-    if (id == 525) return true;
-    if (id == 531) return true;
-    if (id == 10531) return true;
-    if (id == 533) return true;
-    if (id == 10533) return true;
-    if (id == 20533) return true;
-    if (id == 535) return true;
-    if (id == 541) return true;
-    if (id == 10541) return true;
-    if (id == 543) return true;
-    if (id == 10543) return true;
-    if (id == 20543) return true;
-    if (id == 545) return true;
-    if (id == 551) return true;
-    if (id == 10551) return true;
-    if (id == 100551) return true;
-    if (id == 110551) return true;
-    if (id == 200551) return true;
-    if (id == 210551) return true;
-    if (id == 553) return true;
-    if (id == 10553) return true;
-    if (id == 20553) return true;
-    if (id == 30553) return true;
-    if (id == 100553) return true;
-    if (id == 110553) return true;
-    if (id == 120553) return true;
-    if (id == 130553) return true;
-    if (id == 200553) return true;
-    if (id == 210553) return true;
-    if (id == 220553) return true;
-    if (id == 300553) return true;
-    if (id == 900055) return true;
-    if (id == 901055) return true;
-    if (id == 555) return true;
-    if (id == 10555) return true;
-    if (id == 20555) return true;
-    if (id == 100555) return true;
-    if (id == 110555) return true;
-    if (id == 120555) return true;
-    if (id == 200555) return true;
-    if (id == 557) return true;
-    if (id == 100557) return true;
-    if (id == 5122) return true;
-    if (id == 5112) return true;
-    if (id == 5212) return true;
-    if (id == 5222) return true;
-    if (id == 5114) return true;
-    if (id == 5214) return true;
-    if (id == 5224) return true;
-    if (id == 5132) return true;
-    if (id == 5232) return true;
-    if (id == 5312) return true;
-    if (id == 5322) return true;
-    if (id == 5314) return true;
-    if (id == 5324) return true;
-    if (id == 5332) return true;
-    if (id == 5334) return true;
-    if (id == 5142) return true;
-    if (id == 5242) return true;
-    if (id == 5412) return true;
-    if (id == 5422) return true;
-    if (id == 5414) return true;
-    if (id == 5424) return true;
-    if (id == 5342) return true;
-    if (id == 5432) return true;
-    if (id == 5434) return true;
-    if (id == 5442) return true;
-    if (id == 5444) return true;
-    if (id == 5512) return true;
-    if (id == 5522) return true;
-    if (id == 5514) return true;
-    if (id == 5524) return true;
-    if (id == 5532) return true;
-    if (id == 5534) return true;
-    if (id == 5542) return true;
-    if (id == 5544) return true;
-    if (id == 5554) return true;
+    if (id == 5) {return true;}
+    if (id == 511) {return true;}
+    if (id == 521) {return true;}
+    if (id == 10511) {return true;}
+    if (id == 10521) {return true;}
+    if (id == 513) {return true;}
+    if (id == 523) {return true;}
+    if (id == 10513) {return true;}
+    if (id == 10523) {return true;}
+    if (id == 20513) {return true;}
+    if (id == 20523) {return true;}
+    if (id == 515) {return true;}
+    if (id == 525) {return true;}
+    if (id == 531) {return true;}
+    if (id == 10531) {return true;}
+    if (id == 533) {return true;}
+    if (id == 10533) {return true;}
+    if (id == 20533) {return true;}
+    if (id == 535) {return true;}
+    if (id == 541) {return true;}
+    if (id == 10541) {return true;}
+    if (id == 543) {return true;}
+    if (id == 10543) {return true;}
+    if (id == 20543) {return true;}
+    if (id == 545) {return true;}
+    if (id == 551) {return true;}
+    if (id == 10551) {return true;}
+    if (id == 100551) {return true;}
+    if (id == 110551) {return true;}
+    if (id == 200551) {return true;}
+    if (id == 210551) {return true;}
+    if (id == 553) {return true;}
+    if (id == 10553) {return true;}
+    if (id == 20553) {return true;}
+    if (id == 30553) {return true;}
+    if (id == 100553) {return true;}
+    if (id == 110553) {return true;}
+    if (id == 120553) {return true;}
+    if (id == 130553) {return true;}
+    if (id == 200553) {return true;}
+    if (id == 210553) {return true;}
+    if (id == 220553) {return true;}
+    if (id == 300553) {return true;}
+    if (id == 900055) {return true;}
+    if (id == 901055) {return true;}
+    if (id == 555) {return true;}
+    if (id == 10555) {return true;}
+    if (id == 20555) {return true;}
+    if (id == 100555) {return true;}
+    if (id == 110555) {return true;}
+    if (id == 120555) {return true;}
+    if (id == 200555) {return true;}
+    if (id == 557) {return true;}
+    if (id == 100557) {return true;}
+    if (id == 5122) {return true;}
+    if (id == 5112) {return true;}
+    if (id == 5212) {return true;}
+    if (id == 5222) {return true;}
+    if (id == 5114) {return true;}
+    if (id == 5214) {return true;}
+    if (id == 5224) {return true;}
+    if (id == 5132) {return true;}
+    if (id == 5232) {return true;}
+    if (id == 5312) {return true;}
+    if (id == 5322) {return true;}
+    if (id == 5314) {return true;}
+    if (id == 5324) {return true;}
+    if (id == 5332) {return true;}
+    if (id == 5334) {return true;}
+    if (id == 5142) {return true;}
+    if (id == 5242) {return true;}
+    if (id == 5412) {return true;}
+    if (id == 5422) {return true;}
+    if (id == 5414) {return true;}
+    if (id == 5424) {return true;}
+    if (id == 5342) {return true;}
+    if (id == 5432) {return true;}
+    if (id == 5434) {return true;}
+    if (id == 5442) {return true;}
+    if (id == 5444) {return true;}
+    if (id == 5512) {return true;}
+    if (id == 5522) {return true;}
+    if (id == 5514) {return true;}
+    if (id == 5524) {return true;}
+    if (id == 5532) {return true;}
+    if (id == 5534) {return true;}
+    if (id == 5542) {return true;}
+    if (id == 5544) {return true;}
+    if (id == 5554) {return true;}
     return false;
 }
 
@@ -362,7 +362,7 @@ int getSourceId(int genpIdx) {
 //   can add susy particles here
 bool terminateSourceId(int sourceId) {
     int id = abs(sourceId);
-    if (id == 6 || id == 25) return true;
+    if (id == 6 || id == 25) {return true;}
     return false;
 }
 
@@ -372,7 +372,7 @@ bool terminateSourceId(int sourceId) {
 //   can add susy particles here
 bool useSourceId(int motherId) {
     int id = abs(motherId);
-    if (id == 6 || (id >= 23 && id <= 25)) return true;
+    if (id == 6 || (id >= 23 && id <= 25)) {return true;}
     return false;
 }
 
@@ -381,7 +381,7 @@ bool useSourceId(int motherId) {
 //   quarks, gluons, hadrons
 bool terminateMotherId(int motherId) {
     int id = abs(motherId);
-    if (id <= 5 || id == 21 || (id > 100 && id < 1000000)) return true;
+    if (id <= 5 || id == 21 || (id > 100 && id < 1000000)) {return true;}
     return false;
 }
 
@@ -544,7 +544,7 @@ float getISRUncertainty(int nisrMatch) {
 // returns 2017 Moriond ISR weight based on ISR pt, for ewkino models
 // s6 of https://www.dropbox.com/s/rv79odbk1plltm1/17-02-22_ana_isr_ewk.pdf?dl=1 (link to be updated once in a more
 // permanent place)
-float getISRWeightEwkino(float isr_pt) {
+float getISRWeightEWkino(float isr_pt) {
 
     if (isr_pt < 50.)
         return 1.000;

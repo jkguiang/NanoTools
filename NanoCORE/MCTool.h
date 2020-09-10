@@ -118,6 +118,6 @@ float getISRUncertainty ( int nisrMatch );
 float getISRWeight ( int nisrMatch, int year );
 float getISRUncertainty ( int nisrMatch, int year );
 // Moriond 2017 ISR recipe for ewkino models
-float getISRWeightEwkino ( float isr_pt );
+float getISRWeightEWkino ( float isr_pt );
 
 #endif
