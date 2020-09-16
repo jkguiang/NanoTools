@@ -29,6 +29,7 @@ ControlTree::ControlTree(TFile* new_tfile) {
     ttree = new TTree("tree", "tree");
     tfile = new_tfile;
     // Event
+    b_event = ttree->Branch("event", &event, "event/I");
     b_num_pvs = ttree->Branch("num_pvs", &num_pvs, "num_pvs/I");
 	b_met = ttree->Branch("met", &met, "met/F");
 	b_ht = ttree->Branch("ht", &ht, "ht/F");
@@ -74,6 +75,7 @@ ControlTree::ControlTree(TFile* new_tfile) {
                                                    &trailing_vbs_jet_phi, 
                                                    "trailing_vbs_jet_phi/F");
 	b_vbs_dijet_mass = ttree->Branch("vbs_dijet_mass", &vbs_dijet_mass, "vbs_dijet_mass/F");
+	b_jet_is_btagged = ttree->Branch("jet_is_btagged", &jet_is_btagged);
 	b_jet_is_vbs = ttree->Branch("jet_is_vbs", &jet_is_vbs);
 	b_jet_pt = ttree->Branch("jet_pt", &jet_pt);
 	b_jet_eta = ttree->Branch("jet_eta", &jet_eta);
@@ -95,12 +97,6 @@ ControlTree::ControlTree(TFile* new_tfile) {
     // Weights
 	b_gen_weight = ttree->Branch("gen_weight", &gen_weight, "gen_weight/F");
 	b_mc_weight = ttree->Branch("mc_weight", &mc_weight, "mc_weight/F");
-	b_mc_loose_btag_weight = ttree->Branch("mc_loose_btag_weight", 
-                                           &mc_loose_btag_weight, 
-                                           "mc_loose_btag_weight/F");
-	b_mc_medium_btag_weight = ttree->Branch("mc_medium_btag_weight", 
-                                            &mc_medium_btag_weight, 
-                                            "mc_medium_btag_weight/F");
 	b_mc_tight_btag_weight = ttree->Branch("mc_tight_btag_weight", 
                                            &mc_tight_btag_weight, 
                                            "mc_tight_btag_weight/F");
@@ -121,12 +117,6 @@ ControlTree::ControlTree(TFile* new_tfile) {
         }
         // CSV object
         deepjet_csv = BTagCalibration("csvv1", csv_path);
-        // Loose reader
-        deepjet_loose_reader = BTagCalibrationReader(BTagEntry::OP_LOOSE, "central");
-        deepjet_loose_reader.load(deepjet_csv, BTagEntry::FLAV_B, "comb");
-        // Medium reader
-        deepjet_medium_reader = BTagCalibrationReader(BTagEntry::OP_MEDIUM, "central");
-        deepjet_medium_reader.load(deepjet_csv, BTagEntry::FLAV_B, "comb");
         // Tight reader
         deepjet_tight_reader = BTagCalibrationReader(BTagEntry::OP_TIGHT, "central");
         deepjet_tight_reader.load(deepjet_csv, BTagEntry::FLAV_B, "comb");
@@ -135,6 +125,7 @@ ControlTree::ControlTree(TFile* new_tfile) {
 
 void ControlTree::resetBranches() {
 	// Event
+    event = -999;
     num_pvs = -999;
 	met = -999;
 	ht = -999;
@@ -160,6 +151,7 @@ void ControlTree::resetBranches() {
     trailing_vbs_jet_eta = -999;
     trailing_vbs_jet_phi = -999;
     vbs_dijet_mass = -999;
+    jet_is_btagged.clear();
     jet_is_vbs.clear();
     jet_pt.clear();
     jet_eta.clear();
@@ -186,15 +178,16 @@ void ControlTree::resetBranches() {
 	mc_tight_btag_weight = 1.;
 }
 
-bool ControlTree::jetLeptonOverlap(int jet_idx, Lepton lep) {
-    int lep_jet_idx = -1;
+bool ControlTree::jetLeptonOverlap(Jet jet, Lepton lep) {
+    unsigned int lep_jet_idx = 999;
     if (lep.is_el()) { lep_jet_idx = Electron_jetIdx().at(lep.idx()); }
     else if (lep.is_mu()) { lep_jet_idx = Muon_jetIdx().at(lep.idx()); }
     else { return false; }
-    return (lep_jet_idx == jet_idx);
+    return (lep_jet_idx == jet.idx());
 }
 
 void ControlTree::fillBranches() {
+    event = nt.event();
 	// Get Leptons
 	Leptons leptons = getLeptons();
 	// Iter Over Leptons 
@@ -263,30 +256,37 @@ void ControlTree::fillBranches() {
         throw std::runtime_error("ControlTree::fillBranches: Error - invalid year");
         return;
     }
-	int num_tagged_b_loose = 0;	
-	int num_tagged_b_medium = 0;
-	int num_tagged_b_tight = 0;	
+
 	// Iter Over Jets
+	int num_tagged_b_tight = 0;	
     double sf = 1.0; // placeholder for btag sf (MC only)
-    vector<unsigned int> good_jets;
-    vector<VBSJetCand> vbs_jet_cands;
+    vector<Jet> good_jets;
+    vector<Jet> vbs_jet_cands;
 	for (unsigned int i = 0; i < nJet(); i++) {
         // Require tight jet ID
         if (!(Jet_jetId().at(i) & (1 << 2))) { continue; }
         // Check other jet properties
+        Jet jet = Jet(i);
         bool vbs_jet_candidate = true;
         bool taggable = true;
         bool countable = true;
-		if (fabs(Jet_eta().at(i)) >= 2.4) { 
+        // Check jets in forward region
+		if (fabs(jet.eta()) > 2.5) { 
             taggable = false; 
+            // Fix for 2017 jets with |eta| \in (2.5, 3.2)
+            if (year() == 2017 && fabs(jet.eta()) < 3.2 && Jet_puId().at(i) != 7) {
+                vbs_jet_candidate = false;
+                countable = false;
+            }
         }
-		if (Jet_pt().at(i) <= 30) {
+        // Check jet pt
+		if (jet.pt() <= 30) {
             taggable = false;
             vbs_jet_candidate = false;
             countable = false;
         }
         // Lepton overlap removal
-		if (jetLeptonOverlap(i, leading_lep) || jetLeptonOverlap(i, trailing_lep)) {
+		if (jetLeptonOverlap(jet, leading_lep) || jetLeptonOverlap(jet, trailing_lep)) {
             taggable = false;
             vbs_jet_candidate = false;
             countable = false;
@@ -294,37 +294,16 @@ void ControlTree::fillBranches() {
         // START: b-tagging procedure
         if (taggable) {
             // Get jet pt for sfs (MC only)
-            float mc_jet_pt = (Jet_pt().at(i) < 1000.) ? Jet_pt().at(i) : 999.;
+            float mc_jet_pt = (jet.pt() < 1000.) ? jet.pt() : 999.;
             // Check DeepJet working points
             float deepjet_disc = Jet_btagDeepFlavB().at(i);
-            if (deepjet_disc >= loose_working_point) {
-                num_tagged_b_loose++;
-                if (!isData()) {
-                    sf = deepjet_loose_reader.eval(BTagEntry::FLAV_B,
-                                                   Jet_eta().at(i),
-                                                   mc_jet_pt,
-                                                   deepjet_disc);
-                    assert (sf > 0.);
-                    mc_loose_btag_weight *= sf;
-                }
-            }
-            if (deepjet_disc >= medium_working_point) {
-                num_tagged_b_medium++;
-                if (!isData()) {
-                    sf = deepjet_medium_reader.eval(BTagEntry::FLAV_B,
-                                                    Jet_eta().at(i),
-                                                    mc_jet_pt,
-                                                    deepjet_disc);
-                    assert (sf > 0.);
-                    mc_medium_btag_weight *= sf;
-                }
-            }
             if (deepjet_disc >= tight_working_point) {
                 vbs_jet_candidate = false;
+                jet.set_is_btagged(true);
                 num_tagged_b_tight++;
                 if (!isData()) {
                     sf = deepjet_tight_reader.eval(BTagEntry::FLAV_B,
-                                                   Jet_eta().at(i),
+                                                   jet.eta(),
                                                    mc_jet_pt,
                                                    deepjet_disc);
                     assert (sf > 0.);
@@ -334,8 +313,8 @@ void ControlTree::fillBranches() {
         }
         // END: b-tagging procedure
         if (countable) { 
-            if (vbs_jet_candidate) { vbs_jet_cands.push_back(VBSJetCand(i)); }
-            good_jets.push_back(i); 
+            if (vbs_jet_candidate) { vbs_jet_cands.push_back(jet); }
+            good_jets.push_back(jet); 
         }
 	}
 
@@ -345,8 +324,8 @@ void ControlTree::fillBranches() {
     }
 
     // VBS candidate search procedure
-    VBSJetCand leading_jet;
-    VBSJetCand trailing_jet;
+    Jet leading_vbs_jet;
+    Jet trailing_vbs_jet;
     if (vbs_jet_cands.size() == 0) {
         // Veto these events
         return;
@@ -356,16 +335,16 @@ void ControlTree::fillBranches() {
         return;
     }
     else if (vbs_jet_cands.size() == 2) {
-        VBSJetCand jet1 = vbs_jet_cands.at(0);
-        VBSJetCand jet2 = vbs_jet_cands.at(1);
+        Jet jet1 = vbs_jet_cands.at(0);
+        Jet jet2 = vbs_jet_cands.at(1);
         // Sort into leading and trailing jets
         if (jet1.pt() > jet2.pt()) {
-            leading_jet = jet1;
-            trailing_jet = jet2;
+            leading_vbs_jet = jet1;
+            trailing_vbs_jet = jet2;
         }
         else {
-            leading_jet = jet2;
-            trailing_jet = jet1;
+            leading_vbs_jet = jet2;
+            trailing_vbs_jet = jet1;
         }
     }
     else {
@@ -373,20 +352,24 @@ void ControlTree::fillBranches() {
         bool all_eta_gt0 = true;
         bool all_eta_lt0 = true;
         for (unsigned int i = 0; i < vbs_jet_cands.size(); i++) {
-            VBSJetCand jet = vbs_jet_cands.at(i);
+            Jet jet = vbs_jet_cands.at(i);
             if (jet.eta() > 0) {
                 all_eta_lt0 = false;
             }
             else if (jet.eta() < 0) {
                 all_eta_gt0 = false;
             }
+            else {
+                all_eta_gt0 = false;
+                all_eta_lt0 = false;
+            }
         }
         if (all_eta_gt0 || all_eta_lt0) {
-            VBSJetCand largest_P_jet;
-            VBSJetCand next_largest_P_jet;
+            Jet largest_P_jet;
+            Jet next_largest_P_jet;
             // Find two jets with largest P
             for (unsigned int i = 0; i < vbs_jet_cands.size(); i++) {
-                VBSJetCand jet = vbs_jet_cands.at(i);
+                Jet jet = vbs_jet_cands.at(i);
                 if (jet.p4().P() > largest_P_jet.p4().P()) {
                     next_largest_P_jet = largest_P_jet;
                     largest_P_jet = jet;
@@ -397,20 +380,20 @@ void ControlTree::fillBranches() {
             }
             // Sort into leading and trailing jets
             if (largest_P_jet.pt() > next_largest_P_jet.pt()) {
-                leading_jet = largest_P_jet;
-                trailing_jet = next_largest_P_jet;
+                leading_vbs_jet = largest_P_jet;
+                trailing_vbs_jet = next_largest_P_jet;
             }
             else {
-                leading_jet = next_largest_P_jet;
-                trailing_jet = largest_P_jet;
+                leading_vbs_jet = next_largest_P_jet;
+                trailing_vbs_jet = largest_P_jet;
             }
         }
         else {
-            VBSJetCand largest_P_neg_eta_jet;
-            VBSJetCand largest_P_pos_eta_jet;
+            Jet largest_P_neg_eta_jet;
+            Jet largest_P_pos_eta_jet;
             // Find jet with largest P in each eta region (positive, negative)
             for (unsigned int i = 0; i < vbs_jet_cands.size(); i++) {
-                VBSJetCand jet = vbs_jet_cands.at(i);
+                Jet jet = vbs_jet_cands.at(i);
                 if (jet.eta() < 0) {
                     if (jet.p4().P() > largest_P_neg_eta_jet.p4().P()) {
                         largest_P_neg_eta_jet = jet;
@@ -424,12 +407,12 @@ void ControlTree::fillBranches() {
             }
             // Sort into leading and trailing jets
             if (largest_P_pos_eta_jet.pt() > largest_P_neg_eta_jet.pt()) {
-                leading_jet = largest_P_pos_eta_jet;
-                trailing_jet = largest_P_neg_eta_jet;
+                leading_vbs_jet = largest_P_pos_eta_jet;
+                trailing_vbs_jet = largest_P_neg_eta_jet;
             }
             else {
-                leading_jet = largest_P_neg_eta_jet;
-                trailing_jet = largest_P_pos_eta_jet;
+                leading_vbs_jet = largest_P_neg_eta_jet;
+                trailing_vbs_jet = largest_P_pos_eta_jet;
             }
         }
     }
@@ -439,35 +422,37 @@ void ControlTree::fillBranches() {
 	met = MET_pt();
     ht = 0.; // Set in loop over good jets below
     // Leptons
-	leading_lep_id = leading_lep.id();
-	leading_lep_pt = leading_lep.pt();
-	leading_lep_eta = leading_lep.eta();
-	leading_lep_phi = leading_lep.phi();
-	trailing_lep_id = trailing_lep.id();
-	trailing_lep_pt = trailing_lep.pt();
-	trailing_lep_eta = trailing_lep.eta();
-	trailing_lep_phi = trailing_lep.phi();
+    leading_lep_id = leading_lep.id();
+    leading_lep_pt = leading_lep.pt();
+    leading_lep_eta = leading_lep.eta();
+    leading_lep_phi = leading_lep.phi();
+    trailing_lep_id = trailing_lep.id();
+    trailing_lep_pt = trailing_lep.pt();
+    trailing_lep_eta = trailing_lep.eta();
+    trailing_lep_phi = trailing_lep.phi();
     dilep_mass = (leading_lep.p4()+trailing_lep.p4()).M();
     // Jets
-    leading_vbs_jet_mc_origin = leading_jet.mc_origin();
-    leading_vbs_jet_P = leading_jet.p4().P();
-    leading_vbs_jet_pt = leading_jet.pt();
-    leading_vbs_jet_eta = leading_jet.eta();
-    leading_vbs_jet_phi = leading_jet.phi();
-    trailing_vbs_jet_mc_origin = trailing_jet.mc_origin();
-    trailing_vbs_jet_P = trailing_jet.p4().P();
-    trailing_vbs_jet_pt = trailing_jet.pt();
-    trailing_vbs_jet_eta = trailing_jet.eta();
-    trailing_vbs_jet_phi = trailing_jet.phi();
-    vbs_dijet_mass = (leading_jet.p4()+trailing_jet.p4()).M();
+    leading_vbs_jet_mc_origin = leading_vbs_jet.mc_origin();
+    leading_vbs_jet_P = leading_vbs_jet.p4().P();
+    leading_vbs_jet_pt = leading_vbs_jet.pt();
+    leading_vbs_jet_eta = leading_vbs_jet.eta();
+    leading_vbs_jet_phi = leading_vbs_jet.phi();
+    trailing_vbs_jet_mc_origin = trailing_vbs_jet.mc_origin();
+    trailing_vbs_jet_P = trailing_vbs_jet.p4().P();
+    trailing_vbs_jet_pt = trailing_vbs_jet.pt();
+    trailing_vbs_jet_eta = trailing_vbs_jet.eta();
+    trailing_vbs_jet_phi = trailing_vbs_jet.phi();
+    vbs_dijet_mass = (leading_vbs_jet.p4()+trailing_vbs_jet.p4()).M();
     for (unsigned int i = 0; i < good_jets.size(); i++) {
-        int jet_idx = good_jets.at(i);
-        ht += Jet_pt().at(jet_idx);
-        jet_is_vbs.push_back(jet_idx == leading_jet.idx() || jet_idx == trailing_jet.idx());
-        jet_pt.push_back(Jet_pt().at(jet_idx));
-        jet_eta.push_back(Jet_eta().at(jet_idx));
-        jet_phi.push_back(Jet_phi().at(jet_idx));
-        if (!isData()) { jet_mc_origin.push_back(Jet_partonFlavour().at(jet_idx)); }
+        Jet jet = good_jets.at(i);
+        unsigned int jet_idx = jet.idx();
+        ht += jet.pt();
+        jet_is_btagged.push_back(jet.is_btagged());
+        jet_is_vbs.push_back(jet_idx == leading_vbs_jet.idx() || jet_idx == trailing_vbs_jet.idx());
+        jet_pt.push_back(jet.pt());
+        jet_eta.push_back(jet.eta());
+        jet_phi.push_back(jet.phi());
+        if (!isData()) { jet_mc_origin.push_back(jet.mc_origin()); }
         else { jet_mc_origin.push_back(-999); }
         jet_pu_id.push_back(Jet_puId().at(jet_idx));
         jet_pu_id_disc.push_back(Jet_puIdDisc().at(jet_idx));
@@ -481,10 +466,10 @@ void ControlTree::fillBranches() {
         jet_ch_pv2_Efrac.push_back(Jet_chFPV2EF().at(jet_idx));
         jet_ch_pv3_Efrac.push_back(Jet_chFPV3EF().at(jet_idx));
     }
-	num_jets = good_jets.size();
+    num_jets = good_jets.size();
     num_btags_tight = num_tagged_b_tight;
-	// Weights
-	if (!isData()) {
+    // Weights
+    if (!isData()) {
         gen_weight = genWeight();
         mc_weight = 1.;
         if (year() == 2016) {
@@ -503,9 +488,9 @@ void ControlTree::fillBranches() {
             throw std::runtime_error("ControlTree::fillBranches: Error - invalid year");
             return;
         }
-	}
-	fillTTree();	
-	return;
+    }
+    fillTTree();	
+    return;
 }
 
 void ControlTree::trackTH1F(TH1F* new_hist) {

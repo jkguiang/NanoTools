@@ -6,17 +6,19 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-struct VBSJetCand {
+struct Jet {
     // Constructor
-    VBSJetCand(unsigned int idx = 0) : idx_(idx) {
-        pt_ = nt.Jet_pt().at(idx);
-        eta_ = nt.Jet_eta().at(idx);
-        phi_ = nt.Jet_phi().at(idx);
-        mass_ = nt.Jet_mass().at(idx);
-        p4_ = nt.Jet_p4().at(idx);
-        mc_origin_ = -999;
-        if (!nt.isData()) {
-            mc_origin_ = nt.Jet_partonFlavour().at(idx);
+    Jet(unsigned int idx = 999) : idx_(idx) {
+        if (idx != 999) {
+            pt_ = nt.Jet_pt().at(idx);
+            eta_ = nt.Jet_eta().at(idx);
+            phi_ = nt.Jet_phi().at(idx);
+            mass_ = nt.Jet_mass().at(idx);
+            p4_ = nt.Jet_p4().at(idx);
+            mc_origin_ = -999;
+            if (!nt.isData()) {
+                mc_origin_ = nt.Jet_partonFlavour().at(idx);
+            }
         }
     }
     // Accessors
@@ -27,20 +29,24 @@ struct VBSJetCand {
     float mass() { return mass_; }
     unsigned int idx() { return idx_; }
     int mc_origin() { return mc_origin_; }
+    void set_is_btagged(bool is_btagged) { is_btagged_ = is_btagged; }
+    bool is_btagged() { return is_btagged_; }
     private:
         // Attributes
         LorentzVector p4_;
-        float pt_;
-        float eta_;
-        float phi_;
-        float mass_;
-        unsigned int idx_;
+        float pt_ = -999;
+        float eta_ = -999;
+        float phi_ = -999;
+        float mass_ = -999;
+        unsigned int idx_ = 999;
         int mc_origin_ = -999;
+        bool is_btagged_ = false;
 };
 
 class ControlTree {
 
     // Event
+    TBranch* b_event;
     TBranch* b_num_pvs;
 	TBranch* b_met;
 	TBranch* b_ht;
@@ -64,6 +70,7 @@ class ControlTree {
     TBranch* b_trailing_vbs_jet_eta;
     TBranch* b_trailing_vbs_jet_phi;
     TBranch* b_vbs_dijet_mass;
+    TBranch* b_jet_is_btagged;
     TBranch* b_jet_is_vbs;
     TBranch* b_jet_pt;
     TBranch* b_jet_eta;
@@ -100,6 +107,7 @@ class ControlTree {
         BTagCalibrationReader deepjet_medium_reader;
         BTagCalibrationReader deepjet_tight_reader;
         // Event
+        int event;
         int num_pvs;
 		float met;
 		float ht;
@@ -125,6 +133,7 @@ class ControlTree {
 		float trailing_vbs_jet_eta;
 		float trailing_vbs_jet_phi;
         float vbs_dijet_mass;
+        vector<bool> jet_is_btagged;
         vector<bool> jet_is_vbs;
         vector<float> jet_pt;
         vector<float> jet_eta;
@@ -154,7 +163,7 @@ class ControlTree {
 		
 		//Methods
 		void resetBranches();
-        bool jetLeptonOverlap(int jet_idx, Lepton lep);
+        bool jetLeptonOverlap(Jet jet, Lepton lep);
 		void fillBranches();
         void trackTH1F(TH1F* new_hist);
 		void fillTTree();
