@@ -1,0 +1,15 @@
+gen_1lepton 8348
+gen_1mu 4116
+gen_1el 4230
+gen_1mu1el 5
+gen_1mu1el_fiducial 4
+gen_1mu1el_fiducial_OS 4
+gen_1mu1el_fiducial_OS_2bquark 3
+reco_geq1mu 3
+reco_geq1el 2
+reco_1mu 3
+reco_1el 2
+reco_1mu1el 2
+reco_1mu1el_OS 2
+reco_1mu1el_OS_HLT 2
+reco_1mu1el_OS_HLT_2btags 1
