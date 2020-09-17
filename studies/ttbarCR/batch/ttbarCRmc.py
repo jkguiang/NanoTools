@@ -22,9 +22,9 @@ if __name__ == "__main__":
     # Specify a dataset name and a short name for the output root file on nfs
     with open("samples.json", "r") as f_in:
         all_samples_map = json.load(f_in)
-        sample_map = all_samples_map["2017"]
+        sample_map = all_samples_map["2018"]
     # Submission tag
-    tag = "baby_v5-0-0"
+    tag = "baby_v6-1-0"
     # Loop over samples
     for dsname, special_dir in sample_map.items():
         task = CondorTask(

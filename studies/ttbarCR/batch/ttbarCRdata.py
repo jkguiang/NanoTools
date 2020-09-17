@@ -31,22 +31,22 @@ if __name__ == "__main__":
     #     "/MuonEG/Run2016H-02Apr2020-v1/NANOAOD": "MuonEG2016H_baby"
     # }
     # 2017
-    sample_map = {
-        "/MuonEG/Run2017B-02Apr2020-v1/NANOAOD": "MuonEG2017B_baby",
-        "/MuonEG/Run2017C-02Apr2020-v1/NANOAOD": "MuonEG2017C_baby",
-        "/MuonEG/Run2017D-02Apr2020-v1/NANOAOD": "MuonEG2017D_baby",
-        "/MuonEG/Run2017E-02Apr2020-v1/NANOAOD": "MuonEG2017E_baby",
-        "/MuonEG/Run2017F-02Apr2020-v1/NANOAOD": "MuonEG2017F_baby"
-    }
-    # 2018
     # sample_map = {
-    #     "/MuonEG/Run2018A-02Apr2020-v1/NANOAOD": "MuonEG2018A_baby",
-    #     "/MuonEG/Run2018B-02Apr2020-v1/NANOAOD": "MuonEG2018B_baby",
-    #     "/MuonEG/Run2018C-02Apr2020-v1/NANOAOD": "MuonEG2018C_baby",
-    #     "/MuonEG/Run2018D-02Apr2020-v1/NANOAOD": "MuonEG2018D_baby"
+    #     "/MuonEG/Run2017B-02Apr2020-v1/NANOAOD": "MuonEG2017B_baby",
+    #     "/MuonEG/Run2017C-02Apr2020-v1/NANOAOD": "MuonEG2017C_baby",
+    #     "/MuonEG/Run2017D-02Apr2020-v1/NANOAOD": "MuonEG2017D_baby",
+    #     "/MuonEG/Run2017E-02Apr2020-v1/NANOAOD": "MuonEG2017E_baby",
+    #     "/MuonEG/Run2017F-02Apr2020-v1/NANOAOD": "MuonEG2017F_baby"
     # }
+    # 2018
+    sample_map = {
+        "/MuonEG/Run2018A-02Apr2020-v1/NANOAOD": "MuonEG2018A_baby",
+        "/MuonEG/Run2018B-02Apr2020-v1/NANOAOD": "MuonEG2018B_baby",
+        "/MuonEG/Run2018C-02Apr2020-v1/NANOAOD": "MuonEG2018C_baby",
+        "/MuonEG/Run2018D-02Apr2020-v1/NANOAOD": "MuonEG2018D_baby"
+    }
     # Submission tag
-    tag = "baby_v3-0-0"
+    tag = "baby_v6-1-0"
     # Loop over samples
     for dsname, shortname in sample_map.items():
         task = CondorTask(
