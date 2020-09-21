@@ -163,7 +163,6 @@ class ControlTree {
         
         //Methods
         void resetBranches();
-        bool jetLeptonOverlap(Jet jet, Lepton lep);
         void fillBranches();
         void trackTH1F(TH1F* new_hist);
         void fillTTree();

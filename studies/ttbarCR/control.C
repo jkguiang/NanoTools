@@ -178,14 +178,6 @@ void ControlTree::resetBranches() {
     mc_tight_btag_weight = 1.;
 }
 
-bool ControlTree::jetLeptonOverlap(Jet jet, Lepton lep) {
-    unsigned int lep_jet_idx = 999;
-    if (lep.is_el()) { lep_jet_idx = Electron_jetIdx().at(lep.idx()); }
-    else if (lep.is_mu()) { lep_jet_idx = Muon_jetIdx().at(lep.idx()); }
-    else { return false; }
-    return (lep_jet_idx == jet.idx());
-}
-
 void ControlTree::fillBranches() {
     event = nt.event();
     // Get Leptons
@@ -255,6 +247,14 @@ void ControlTree::fillBranches() {
     else {
         throw std::runtime_error("ControlTree::fillBranches: Error - invalid year");
         return;
+    }
+
+    bool jetLeptonOverlap = [](Jet jet, Lepton lep) {
+        unsigned int lep_jet_idx = 999;
+        if (lep.is_el()) { lep_jet_idx = Electron_jetIdx().at(lep.idx()); }
+        else if (lep.is_mu()) { lep_jet_idx = Muon_jetIdx().at(lep.idx()); }
+        else { return false; }
+        return (lep_jet_idx == jet.idx());
     }
 
     // Iter Over Jets
@@ -414,6 +414,31 @@ void ControlTree::fillBranches() {
                 leading_vbs_jet = largest_P_neg_eta_jet;
                 trailing_vbs_jet = largest_P_pos_eta_jet;
             }
+        }
+    }
+
+    // HEM prescription
+    bool inHEMRegion = [](float eta, float phi) {
+        bool in_eta_region = (eta >= -4.7 && eta <= -1.4);
+        bool in_phi_region = (phi >= -1.6 && phi <= -0.8);
+        return in_eta_region && in_phi_region;
+    }
+    if (year() == 2018) {
+        bool affected_data = (isData() && run() >= 319077);
+        bool affected_mc = (!isData() && event() % 1961 < 1286);
+        if (affected_data || affected_mc) {
+            if (leading_lep.is_el()) {
+                Lepton lep = leading_lep;
+                if (inHEMRegion(lep.eta(), lep.phi())) { return; }
+            }
+            if (trailing_lep.is_el()) {
+                Lepton lep = trailing_lep;
+                if (inHEMRegion(lep.eta(), lep.phi())) { return; }
+            }
+            Jet jet1 = leading_vbs_jet;
+            Jet jet2 = leading_vbs_jet;
+            if (inHEMRegion(jet1.eta(), jet1.phi())) { return; }
+            if (inHEMRegion(jet2.eta(), jet2.phi())) { return; }
         }
     }
 
