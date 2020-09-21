@@ -48,18 +48,18 @@ class ControlTree {
     // Event
     TBranch* b_event;
     TBranch* b_num_pvs;
-	TBranch* b_met;
-	TBranch* b_ht;
+    TBranch* b_met;
+    TBranch* b_ht;
     // Leptons
-	TBranch* b_leading_lep_id;
-	TBranch* b_leading_lep_pt;
-	TBranch* b_leading_lep_eta;
-	TBranch* b_leading_lep_phi;
-	TBranch* b_trailing_lep_id;
-	TBranch* b_trailing_lep_pt;
-	TBranch* b_trailing_lep_eta;
-	TBranch* b_trailing_lep_phi;
-	TBranch* b_dilep_mass;
+    TBranch* b_leading_lep_id;
+    TBranch* b_leading_lep_pt;
+    TBranch* b_leading_lep_eta;
+    TBranch* b_leading_lep_phi;
+    TBranch* b_trailing_lep_id;
+    TBranch* b_trailing_lep_pt;
+    TBranch* b_trailing_lep_eta;
+    TBranch* b_trailing_lep_phi;
+    TBranch* b_dilep_mass;
     // Jets
     TBranch* b_leading_vbs_jet_mc_origin;
     TBranch* b_leading_vbs_jet_pt;
@@ -90,15 +90,15 @@ class ControlTree {
     TBranch* b_num_jets;
     TBranch* b_num_btags_tight;
     // Weights
-	TBranch* b_gen_weight;
-	TBranch* b_mc_weight;
-	TBranch* b_mc_loose_btag_weight;
-	TBranch* b_mc_medium_btag_weight;
-	TBranch* b_mc_tight_btag_weight;
+    TBranch* b_gen_weight;
+    TBranch* b_mc_weight;
+    TBranch* b_mc_loose_btag_weight;
+    TBranch* b_mc_medium_btag_weight;
+    TBranch* b_mc_tight_btag_weight;
 
-	public:
-	    // ROOT I/O	
-		TTree* ttree;
+    public:
+        // ROOT I/O 
+        TTree* ttree;
         TFile* tfile;
         vector<TH1F*> th1fs;
         // Calibrations
@@ -109,29 +109,29 @@ class ControlTree {
         // Event
         int event;
         int num_pvs;
-		float met;
-		float ht;
+        float met;
+        float ht;
         // Leptons
-		int leading_lep_id;
-		float leading_lep_pt;
-		float leading_lep_eta;
-		float leading_lep_phi;
-		int trailing_lep_id;
-		float trailing_lep_pt;
-		float trailing_lep_eta;
-		float trailing_lep_phi;
-		float dilep_mass;
+        int leading_lep_id;
+        float leading_lep_pt;
+        float leading_lep_eta;
+        float leading_lep_phi;
+        int trailing_lep_id;
+        float trailing_lep_pt;
+        float trailing_lep_eta;
+        float trailing_lep_phi;
+        float dilep_mass;
         // Jets
-		int leading_vbs_jet_mc_origin;
-		float leading_vbs_jet_P;
-		float leading_vbs_jet_pt;
-		float leading_vbs_jet_eta;
-		float leading_vbs_jet_phi;
-		int trailing_vbs_jet_mc_origin;
-		float trailing_vbs_jet_P;
-		float trailing_vbs_jet_pt;
-		float trailing_vbs_jet_eta;
-		float trailing_vbs_jet_phi;
+        int leading_vbs_jet_mc_origin;
+        float leading_vbs_jet_P;
+        float leading_vbs_jet_pt;
+        float leading_vbs_jet_eta;
+        float leading_vbs_jet_phi;
+        int trailing_vbs_jet_mc_origin;
+        float trailing_vbs_jet_P;
+        float trailing_vbs_jet_pt;
+        float trailing_vbs_jet_eta;
+        float trailing_vbs_jet_phi;
         float vbs_dijet_mass;
         vector<bool> jet_is_btagged;
         vector<bool> jet_is_vbs;
@@ -150,24 +150,24 @@ class ControlTree {
         vector<float> jet_ch_pv1_Efrac;
         vector<float> jet_ch_pv2_Efrac;
         vector<float> jet_ch_pv3_Efrac;
-		int num_jets;
-		int num_btags_tight;
+        int num_jets;
+        int num_btags_tight;
         // Weights
-		float gen_weight;
-		float mc_weight;		
-		float mc_loose_btag_weight;		
-		float mc_medium_btag_weight;		
-		float mc_tight_btag_weight;		
-		//Constructor
-		ControlTree(TFile* new_tfile);
-		
-		//Methods
-		void resetBranches();
+        float gen_weight;
+        float mc_weight;        
+        float mc_loose_btag_weight;     
+        float mc_medium_btag_weight;        
+        float mc_tight_btag_weight;     
+        //Constructor
+        ControlTree(TFile* new_tfile);
+        
+        //Methods
+        void resetBranches();
         bool jetLeptonOverlap(Jet jet, Lepton lep);
-		void fillBranches();
+        void fillBranches();
         void trackTH1F(TH1F* new_hist);
-		void fillTTree();
-		void writeTFile();
+        void fillTTree();
+        void writeTFile();
 };
 
 #endif

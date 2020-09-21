@@ -61,11 +61,11 @@ int ScanChain(TChain *ch, TString out_name, TString sample_name) {
             nEventsTotal++;
             bar.progress(nEventsTotal, nEventsChain);
             /* Analysis code */
-			// HLTS
+            // HLTS
             bool passes_HLTs = checkHLTs(MuonElec_HLTs);
-			if (passes_HLTs) {	
-				control_tree->fillBranches();
-			}
+            if (passes_HLTs) {  
+                control_tree->fillBranches();
+            }
             if (!isData()) {
                 n_events->Fill(0.5, genWeight());
             }
