@@ -424,9 +424,9 @@ void ControlTree::fillBranches() {
         return in_eta_region && in_phi_region;
     }
     if (year() == 2018) {
-        bool affected_data = (isData() && run() >= 319077);
-        bool affected_mc = (!isData() && event() % 1961 < 1286);
-        if (affected_data || affected_mc) {
+        bool is_affected_data = (isData() && run() >= 319077);
+        bool is_affected_mc = (!isData() && event() % 1961 < 1286);
+        if (is_affected_data || is_affected_mc) {
             if (leading_lep.is_el()) {
                 Lepton lep = leading_lep;
                 if (inHEMRegion(lep.eta(), lep.phi())) { return; }
