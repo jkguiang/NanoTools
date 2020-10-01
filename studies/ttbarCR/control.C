@@ -25,24 +25,24 @@ using namespace std;
 using namespace tas;
 
 ControlTree::ControlTree(TFile* new_tfile) {
-	// TTree and TFile
+    // TTree and TFile
     ttree = new TTree("tree", "tree");
     tfile = new_tfile;
     // Event
     b_event = ttree->Branch("event", &event, "event/I");
     b_num_pvs = ttree->Branch("num_pvs", &num_pvs, "num_pvs/I");
-	b_met = ttree->Branch("met", &met, "met/F");
-	b_ht = ttree->Branch("ht", &ht, "ht/F");
+    b_met = ttree->Branch("met", &met, "met/F");
+    b_ht = ttree->Branch("ht", &ht, "ht/F");
     // Leptons
-	b_leading_lep_id = ttree->Branch("leading_lep_id", &leading_lep_id, "leading_lep_id/I");
-	b_leading_lep_pt = ttree->Branch("leading_lep_pt", &leading_lep_pt, "leading_lep_pt/F");
-	b_leading_lep_eta = ttree->Branch("leading_lep_eta", &leading_lep_eta, "leading_lep_eta/F");
-	b_leading_lep_phi = ttree->Branch("leading_lep_phi", &leading_lep_phi, "leading_lep_phi/F");
-	b_trailing_lep_id = ttree->Branch("trailing_lep_id", &trailing_lep_id, "trailing_lep_id/I");
-	b_trailing_lep_pt = ttree->Branch("trailing_lep_pt", &trailing_lep_pt, "trailing_lep_pt/F");
-	b_trailing_lep_eta = ttree->Branch("trailing_lep_eta", &trailing_lep_eta, "trailing_lep_eta/F");
-	b_trailing_lep_phi = ttree->Branch("trailing_lep_phi", &trailing_lep_phi, "trailing_lep_phi/F");
-	b_dilep_mass = ttree->Branch("dilep_mass", &dilep_mass, "dilep_mass/F");
+    b_leading_lep_id = ttree->Branch("leading_lep_id", &leading_lep_id, "leading_lep_id/I");
+    b_leading_lep_pt = ttree->Branch("leading_lep_pt", &leading_lep_pt, "leading_lep_pt/F");
+    b_leading_lep_eta = ttree->Branch("leading_lep_eta", &leading_lep_eta, "leading_lep_eta/F");
+    b_leading_lep_phi = ttree->Branch("leading_lep_phi", &leading_lep_phi, "leading_lep_phi/F");
+    b_trailing_lep_id = ttree->Branch("trailing_lep_id", &trailing_lep_id, "trailing_lep_id/I");
+    b_trailing_lep_pt = ttree->Branch("trailing_lep_pt", &trailing_lep_pt, "trailing_lep_pt/F");
+    b_trailing_lep_eta = ttree->Branch("trailing_lep_eta", &trailing_lep_eta, "trailing_lep_eta/F");
+    b_trailing_lep_phi = ttree->Branch("trailing_lep_phi", &trailing_lep_phi, "trailing_lep_phi/F");
+    b_dilep_mass = ttree->Branch("dilep_mass", &dilep_mass, "dilep_mass/F");
     // Jets
     TBranch* b_leading_vbs_jet_mc_origin = ttree->Branch("leading_vbs_jet_mc_origin", 
                                                          &leading_vbs_jet_mc_origin, 
@@ -74,30 +74,30 @@ ControlTree::ControlTree(TFile* new_tfile) {
     TBranch* b_trailing_vbs_jet_phi = ttree->Branch("trailing_vbs_jet_phi", 
                                                    &trailing_vbs_jet_phi, 
                                                    "trailing_vbs_jet_phi/F");
-	b_vbs_dijet_mass = ttree->Branch("vbs_dijet_mass", &vbs_dijet_mass, "vbs_dijet_mass/F");
-	b_jet_is_btagged = ttree->Branch("jet_is_btagged", &jet_is_btagged);
-	b_jet_is_vbs = ttree->Branch("jet_is_vbs", &jet_is_vbs);
-	b_jet_pt = ttree->Branch("jet_pt", &jet_pt);
-	b_jet_eta = ttree->Branch("jet_eta", &jet_eta);
-	b_jet_phi = ttree->Branch("jet_phi", &jet_phi);
-	b_jet_mc_origin = ttree->Branch("jet_mc_origin", &jet_mc_origin);
-	b_jet_pu_id = ttree->Branch("jet_pu_id", &jet_pu_id);
-	b_jet_pu_id_disc = ttree->Branch("jet_pu_id_disc", &jet_pu_id_disc);
-	b_jet_n_em_Efrac = ttree->Branch("jet_n_em_Efrac", &jet_n_em_Efrac);
-	b_jet_n_he_Efrac = ttree->Branch("jet_n_he_Efrac", &jet_n_he_Efrac);
-	b_jet_mu_Efrac = ttree->Branch("jet_mu_Efrac", &jet_mu_Efrac);
-	b_jet_ch_em_Efrac = ttree->Branch("jet_ch_em_Efrac", &jet_ch_em_Efrac);
-	b_jet_ch_he_Efrac = ttree->Branch("jet_ch_he_Efrac", &jet_ch_he_Efrac);
-	b_jet_ch_pv0_Efrac = ttree->Branch("jet_ch_pv0_Efrac", &jet_ch_pv0_Efrac);
-	b_jet_ch_pv1_Efrac = ttree->Branch("jet_ch_pv1_Efrac", &jet_ch_pv1_Efrac);
-	b_jet_ch_pv2_Efrac = ttree->Branch("jet_ch_pv2_Efrac", &jet_ch_pv2_Efrac);
-	b_jet_ch_pv3_Efrac = ttree->Branch("jet_ch_pv3_Efrac", &jet_ch_pv3_Efrac);
-	b_num_jets = ttree->Branch("num_jets", &num_jets, "num_jets/I");
-	b_num_btags_tight = ttree->Branch("num_btags_tight", &num_btags_tight, "num_btags_tight/I");
+    b_vbs_dijet_mass = ttree->Branch("vbs_dijet_mass", &vbs_dijet_mass, "vbs_dijet_mass/F");
+    b_jet_is_btagged = ttree->Branch("jet_is_btagged", &jet_is_btagged);
+    b_jet_is_vbs = ttree->Branch("jet_is_vbs", &jet_is_vbs);
+    b_jet_pt = ttree->Branch("jet_pt", &jet_pt);
+    b_jet_eta = ttree->Branch("jet_eta", &jet_eta);
+    b_jet_phi = ttree->Branch("jet_phi", &jet_phi);
+    b_jet_mc_origin = ttree->Branch("jet_mc_origin", &jet_mc_origin);
+    b_jet_pu_id = ttree->Branch("jet_pu_id", &jet_pu_id);
+    b_jet_pu_id_disc = ttree->Branch("jet_pu_id_disc", &jet_pu_id_disc);
+    b_jet_n_em_Efrac = ttree->Branch("jet_n_em_Efrac", &jet_n_em_Efrac);
+    b_jet_n_he_Efrac = ttree->Branch("jet_n_he_Efrac", &jet_n_he_Efrac);
+    b_jet_mu_Efrac = ttree->Branch("jet_mu_Efrac", &jet_mu_Efrac);
+    b_jet_ch_em_Efrac = ttree->Branch("jet_ch_em_Efrac", &jet_ch_em_Efrac);
+    b_jet_ch_he_Efrac = ttree->Branch("jet_ch_he_Efrac", &jet_ch_he_Efrac);
+    b_jet_ch_pv0_Efrac = ttree->Branch("jet_ch_pv0_Efrac", &jet_ch_pv0_Efrac);
+    b_jet_ch_pv1_Efrac = ttree->Branch("jet_ch_pv1_Efrac", &jet_ch_pv1_Efrac);
+    b_jet_ch_pv2_Efrac = ttree->Branch("jet_ch_pv2_Efrac", &jet_ch_pv2_Efrac);
+    b_jet_ch_pv3_Efrac = ttree->Branch("jet_ch_pv3_Efrac", &jet_ch_pv3_Efrac);
+    b_num_jets = ttree->Branch("num_jets", &num_jets, "num_jets/I");
+    b_num_btags_tight = ttree->Branch("num_btags_tight", &num_btags_tight, "num_btags_tight/I");
     // Weights
-	b_gen_weight = ttree->Branch("gen_weight", &gen_weight, "gen_weight/F");
-	b_mc_weight = ttree->Branch("mc_weight", &mc_weight, "mc_weight/F");
-	b_mc_tight_btag_weight = ttree->Branch("mc_tight_btag_weight", 
+    b_gen_weight = ttree->Branch("gen_weight", &gen_weight, "gen_weight/F");
+    b_mc_weight = ttree->Branch("mc_weight", &mc_weight, "mc_weight/F");
+    b_mc_tight_btag_weight = ttree->Branch("mc_tight_btag_weight", 
                                            &mc_tight_btag_weight, 
                                            "mc_tight_btag_weight/F");
     if (!isData()) {
@@ -124,20 +124,20 @@ ControlTree::ControlTree(TFile* new_tfile) {
 }
 
 void ControlTree::resetBranches() {
-	// Event
+    // Event
     event = -999;
     num_pvs = -999;
-	met = -999;
-	ht = -999;
+    met = -999;
+    ht = -999;
     // Leptons
-	leading_lep_id = -999;
-	leading_lep_pt = -999;
-	leading_lep_eta = -999;
-	leading_lep_phi = -999;
-	trailing_lep_id = -999;
-	trailing_lep_pt = -999;
-	trailing_lep_eta = -999;
-	trailing_lep_phi = -999;
+    leading_lep_id = -999;
+    leading_lep_pt = -999;
+    leading_lep_eta = -999;
+    leading_lep_phi = -999;
+    trailing_lep_id = -999;
+    trailing_lep_pt = -999;
+    trailing_lep_eta = -999;
+    trailing_lep_phi = -999;
     dilep_mass = -999;
     // Jets
     leading_vbs_jet_mc_origin = -999;
@@ -171,31 +171,23 @@ void ControlTree::resetBranches() {
     num_jets = 0;
     num_btags_tight = 0;
     // Weights
-	gen_weight = 1.;
-	mc_weight = 1.;
-	mc_loose_btag_weight = 1.;
-	mc_medium_btag_weight = 1.;
-	mc_tight_btag_weight = 1.;
-}
-
-bool ControlTree::jetLeptonOverlap(Jet jet, Lepton lep) {
-    unsigned int lep_jet_idx = 999;
-    if (lep.is_el()) { lep_jet_idx = Electron_jetIdx().at(lep.idx()); }
-    else if (lep.is_mu()) { lep_jet_idx = Muon_jetIdx().at(lep.idx()); }
-    else { return false; }
-    return (lep_jet_idx == jet.idx());
+    gen_weight = 1.;
+    mc_weight = 1.;
+    mc_loose_btag_weight = 1.;
+    mc_medium_btag_weight = 1.;
+    mc_tight_btag_weight = 1.;
 }
 
 void ControlTree::fillBranches() {
     event = nt.event();
-	// Get Leptons
-	Leptons leptons = getLeptons();
-	// Iter Over Leptons 
+    // Get Leptons
+    Leptons leptons = getLeptons();
+    // Iter Over Leptons 
     Lepton leading_lep;
     Lepton trailing_lep;
     int num_tight_leptons = 0;
     int num_fakable_leptons = 0;
-	for (unsigned int i = 0; i < leptons.size(); i++) {		
+    for (unsigned int i = 0; i < leptons.size(); i++) {     
         Lepton lep = leptons.at(i);
         if (lep.pt() < 10.) {
             continue;
@@ -219,13 +211,13 @@ void ControlTree::fillBranches() {
         if (lep.idlevel() == SS::IDfakable) {
             num_fakable_leptons++;
         }
-	}
+    }
     // Require dilepton events
     if (num_tight_leptons != 2) { return; }
     // Opposite flavor
     if (abs(leading_lep.id()) == abs(trailing_lep.id())) { return; }
     // Opposite sign
-	if (leading_lep.charge() == trailing_lep.charge()) { return; }
+    if (leading_lep.charge() == trailing_lep.charge()) { return; }
     // Veto surviving events with any loose&!tight leptons
     if (num_fakable_leptons > 0) { return; }
     // Make pt cuts on leading/trailing leptons
@@ -234,13 +226,13 @@ void ControlTree::fillBranches() {
     else if (trailing_lep.is_mu() && trailing_lep.pt() < 20.) { return; }
 
     // Run b-tagging procedure and find VBS jet candidates
-    float loose_working_point;	
+    float loose_working_point;  
     float medium_working_point;
     float tight_working_point;
     if (year() == 2016) {
-        loose_working_point = 0.0614;	
-        medium_working_point = 0.3093;	
-        tight_working_point = 0.7221;	
+        loose_working_point = 0.0614;   
+        medium_working_point = 0.3093;  
+        tight_working_point = 0.7221;   
     }
     else if (year() == 2017) {
         loose_working_point = 0.0521;
@@ -257,12 +249,20 @@ void ControlTree::fillBranches() {
         return;
     }
 
-	// Iter Over Jets
-	int num_tagged_b_tight = 0;	
+    bool jetLeptonOverlap = [](Jet jet, Lepton lep) {
+        unsigned int lep_jet_idx = 999;
+        if (lep.is_el()) { lep_jet_idx = Electron_jetIdx().at(lep.idx()); }
+        else if (lep.is_mu()) { lep_jet_idx = Muon_jetIdx().at(lep.idx()); }
+        else { return false; }
+        return (lep_jet_idx == jet.idx());
+    }
+
+    // Iter Over Jets
+    int num_tagged_b_tight = 0; 
     double sf = 1.0; // placeholder for btag sf (MC only)
     vector<Jet> good_jets;
     vector<Jet> vbs_jet_cands;
-	for (unsigned int i = 0; i < nJet(); i++) {
+    for (unsigned int i = 0; i < nJet(); i++) {
         // Require tight jet ID
         if (!(Jet_jetId().at(i) & (1 << 2))) { continue; }
         // Check other jet properties
@@ -271,7 +271,7 @@ void ControlTree::fillBranches() {
         bool taggable = true;
         bool countable = true;
         // Check jets in forward region
-		if (fabs(jet.eta()) > 2.5) { 
+        if (fabs(jet.eta()) > 2.5) { 
             taggable = false; 
             // Fix for 2017 jets with |eta| \in (2.5, 3.2)
             if (year() == 2017 && fabs(jet.eta()) < 3.2 && Jet_puId().at(i) != 7) {
@@ -280,13 +280,13 @@ void ControlTree::fillBranches() {
             }
         }
         // Check jet pt
-		if (jet.pt() <= 30) {
+        if (jet.pt() <= 30) {
             taggable = false;
             vbs_jet_candidate = false;
             countable = false;
         }
         // Lepton overlap removal
-		if (jetLeptonOverlap(jet, leading_lep) || jetLeptonOverlap(jet, trailing_lep)) {
+        if (jetLeptonOverlap(jet, leading_lep) || jetLeptonOverlap(jet, trailing_lep)) {
             taggable = false;
             vbs_jet_candidate = false;
             countable = false;
@@ -316,7 +316,7 @@ void ControlTree::fillBranches() {
             if (vbs_jet_candidate) { vbs_jet_cands.push_back(jet); }
             good_jets.push_back(jet); 
         }
-	}
+    }
 
     // Veto events with < 2 btags
     if (num_tagged_b_tight < 2) {
@@ -417,9 +417,34 @@ void ControlTree::fillBranches() {
         }
     }
 
+    // HEM prescription
+    bool inHEMRegion = [](float eta, float phi) {
+        bool in_eta_region = (eta >= -4.7 && eta <= -1.4);
+        bool in_phi_region = (phi >= -1.6 && phi <= -0.8);
+        return in_eta_region && in_phi_region;
+    }
+    if (year() == 2018) {
+        bool is_affected_data = (isData() && run() >= 319077);
+        bool is_affected_mc = (!isData() && event() % 1961 < 1286);
+        if (is_affected_data || is_affected_mc) {
+            if (leading_lep.is_el()) {
+                Lepton lep = leading_lep;
+                if (inHEMRegion(lep.eta(), lep.phi())) { return; }
+            }
+            if (trailing_lep.is_el()) {
+                Lepton lep = trailing_lep;
+                if (inHEMRegion(lep.eta(), lep.phi())) { return; }
+            }
+            Jet jet1 = leading_vbs_jet;
+            Jet jet2 = leading_vbs_jet;
+            if (inHEMRegion(jet1.eta(), jet1.phi())) { return; }
+            if (inHEMRegion(jet2.eta(), jet2.phi())) { return; }
+        }
+    }
+
     // Event
     num_pvs = PV_npvsGood();
-	met = MET_pt();
+    met = MET_pt();
     ht = 0.; // Set in loop over good jets below
     // Leptons
     leading_lep_id = leading_lep.id();
@@ -489,7 +514,7 @@ void ControlTree::fillBranches() {
             return;
         }
     }
-    fillTTree();	
+    fillTTree();    
     return;
 }
 
@@ -500,7 +525,7 @@ void ControlTree::trackTH1F(TH1F* new_hist) {
 
 void ControlTree::fillTTree() {
     ttree->Fill();
-	return;
+    return;
 }
 
 void ControlTree::writeTFile() {
@@ -510,5 +535,5 @@ void ControlTree::writeTFile() {
         th1fs.at(i)->Write();
     }
     tfile->Close();
-	return;
+    return;
 }
