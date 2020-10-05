@@ -22,7 +22,7 @@ params = {'legend.fontsize': 'x-large',
 plt.rcParams.update(params)
 
 class ControlPlot:
-    def __init__(self, mc_list, data_name, year, baby_ver):
+    def __init__(self, mc_list, data_name, year=0, baby_ver):
         self.df_dict = {}
         for name in mc_list:
             path_to_name = f"/hadoop/cms/store/user/jguiang/ttbarCR/babies/{name}/"
@@ -60,10 +60,11 @@ class ControlPlot:
                 except:
                     continue
             tmp_df = pd.concat(df_list)
+            tmp_df_year = tmp_df[tmp_df['year'] == year] if year is not 0 else tmp_df
             if name is not data_name:
-                self.df_dict[name] = tmp_df[tmp_df['year'] == year]
+                self.df_dict[name] = tmp_df_year
             elif name is data_name:
-                self.data_df = tmp_df[tmp_df['year'] == year]
+                self.data_df = tmp_df_year
                 
         weight_dict = dict()
         normalization_weight = 1.0
