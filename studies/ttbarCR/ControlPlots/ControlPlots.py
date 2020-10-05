@@ -22,7 +22,8 @@ params = {'legend.fontsize': 'x-large',
 plt.rcParams.update(params)
 
 class ControlPlot:
-    def __init__(self, mc_list, data_name, year=0, baby_ver):
+    def __init__(self, mc_list, data_name, year, baby_ver):
+        self.year = year
         self.df_dict = {}
         for name in mc_list:
             path_to_name = f"/hadoop/cms/store/user/jguiang/ttbarCR/babies/{name}/"
@@ -60,7 +61,7 @@ class ControlPlot:
                 except:
                     continue
             tmp_df = pd.concat(df_list)
-            tmp_df_year = tmp_df[tmp_df['year'] == year] if year is not 0 else tmp_df
+            tmp_df_year = tmp_df[tmp_df['year'] == year] if type(year) is int else tmp_df
             if name is not data_name:
                 self.df_dict[name] = tmp_df_year
             elif name is data_name:
@@ -111,7 +112,7 @@ class ControlPlot:
         # Plot new labels/handles
         sorted_labels = tuple(sorted_labels)
         sorted_handles = tuple(sorted_handles)
-        ax1.legend(sorted_handles, sorted_labels, title=r'$\bf{}$'.format(self.df_dict['TTJets'].year.iloc[0]),title_fontsize=15)
+        ax1.legend(sorted_handles, sorted_labels, title=r'$\bf{}$'.format(self.year),title_fontsize=15)
         ax1.text(
             0.0, 
             1.01,
@@ -132,15 +133,26 @@ class ControlPlot:
             style="italic", 
             size=18
         )
-        ax1.text(
-            0.99, 
-            1.01,
-            "%0.1f fb${}^\mathregular{-1}$ (13 TeV)" % (self.df_dict['TTJets'].int_lumi.iloc[0] / 1000), 
-            horizontalalignment='right', 
-            verticalalignment='bottom', 
-            transform = ax1.transAxes, 
-            size="x-large"
-        )
+        if type(year) is int:
+            ax1.text(
+                0.99, 
+                1.01,
+                "%0.1f fb${}^\mathregular{-1}$ (13 TeV)" % (self.df_dict['TTJets'].int_lumi.iloc[0] / 1000), 
+                horizontalalignment='right', 
+                verticalalignment='bottom', 
+                transform = ax1.transAxes, 
+                size="x-large"
+            )
+        else:
+            ax1.text(
+                0.99, 
+                1.01,
+                "%0.1f fb${}^\mathregular{-1}$ (13 TeV)" % 137.2, 
+                horizontalalignment='right', 
+                verticalalignment='bottom', 
+                transform = ax1.transAxes, 
+                size="x-large"
+            )
         ax1.set_ylabel("Events")
         ax1.set_ylim(bottom=0.)
         ax1.xaxis.set_minor_locator(AutoMinorLocator())
